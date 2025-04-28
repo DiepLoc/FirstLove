@@ -1,0 +1,21 @@
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore editor-specific files
+*.sublime-project
+*.sublime-workspace
+*.vscode/
+.idea/
+
+# Ignore LÖVE build artifacts (if you create .love files or builds)
+*.love
+build/
+dist/
+
+# Ignore Lua backup files
+*.bak
+*~
+
+# Ignore debug/log files (optional)
+*.log
