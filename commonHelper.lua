@@ -1,0 +1,1 @@
+CommonHelper = Object:extend()

@@ -1,11 +1,10 @@
-require "classic"
-
 Vector2 = Object:extend()
 
 -- Constructor
 function Vector2:new(x, y)
     self.x = x or 0
     self.y = y or 0
+    return self
 end
 
 -- Add operator
