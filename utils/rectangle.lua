@@ -1,10 +1,10 @@
--- rectangle.lua
+---@class Rectangle
 Rectangle = Object:extend()
 
 -- Constructor
 function Rectangle:new(x, y, width, height)
     self.x = x
-    self.y = y-- Position stored as Vector2
+    self.y = y -- Position stored as Vector2
     self.width = width or 0
     self.height = height or 0
     return self
@@ -28,7 +28,6 @@ function Rectangle:__index(key)
         return self.x + self.width
     elseif key == "bottom" then
         return self.y + self.height
-
     else
         return rawget(getmetatable(self), key) or rawget(self, key)
     end
@@ -49,9 +48,9 @@ end
 -- Check for collision with another rectangle
 function Rectangle:collidesWith(other)
     return not (self.x + self.width < other.x or
-                self.x > other.x + other.width or
-                self.y + self.height < other.y or
-                self.y > other.y + other.height)
+        self.x > other.x + other.width or
+        self.y + self.height < other.y or
+        self.y > other.y + other.height)
 end
 
 -- Resize the rectangle

@@ -1,4 +1,4 @@
-FlyState = Object:extend()
+FlyState = BaseState:extend()
 
 function FlyState:new(directionVector, speed)
     local nomalizedVector = directionVector:normalize()

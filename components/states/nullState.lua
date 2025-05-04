@@ -1,4 +1,4 @@
-NullState = Object:extend()
+NullState = BaseState:extend()
 
 function NullState:new()
     return self

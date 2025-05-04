@@ -1,12 +1,28 @@
 Constants = {
-    GRAVITY = 10,
-    GRAVITY_JUMP = -300,
-    PLAYER_SPEED = 150,
+    GRAVITY = 800,
+    GRAVITY_JUMP = -500,
+    PLAYER_SPEED = 500,
     GROUND_Y = 400,
     TILE_SIZE = 32,
     ARROW_SPEED = 500,
     PLAYER_SIZE = 64,
+    WINDOW_WIDTH = 1200,
+    WINDOW_HEIGHT = 800,
+    WATER_SPEED_RATE = 0.4,
+
     -- game object names
-    OBJ_NAME_PLAYER = "Player",
+    OBJ_NAME_PLAYER = "PLAYER",
+    OBJ_NAME_ZOMBIE = "ZOMBIE",
+    OBJ_NAME_SKELETON = "SKELETON",
+    OBJ_NAME_CREEPER = "CREEPER",
+    OBJ_NAME_OBJECT = "GameObject",
+    OBJ_NAME_WATER = "WATER",
+
+    -- terrain
+    MAP_WIDTH = 500,
+    MAP_HEIGHT = 100,
+    MAP_WATER_HEIGHT = 50,
+    MAP_GENERATE_SCALE = 0.02,
+    MAP_GENERATE_OFFSET = 0,
 }
 return Constants

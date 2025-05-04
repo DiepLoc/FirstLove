@@ -1,3 +1,4 @@
+---@class StateComp
 StateComp = Object:extend()
 
 function StateComp:new(baseState)

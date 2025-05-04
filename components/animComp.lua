@@ -1,9 +1,12 @@
+---@class AnimComp
 AnimComp = Object:extend()
 
 function AnimComp:new(currentAnimName, anim)
     self.anims = {}
     self:addAnim(currentAnimName, anim)
     self.currentAnimName = currentAnimName
+    self.isInsideScreen = true
+    self.color = nil
     return self
 end
 
@@ -27,9 +30,10 @@ function AnimComp:setCurrentAnim(name)
     end
 end
 
-function AnimComp:update(dt)
+function AnimComp:update(subject, dt)
     local currentAnim = self:getCurrentAnim()
     currentAnim:update(dt)
+    -- self.isInsideScreen = MyLocator.camera:worldToScreenOrNull(subject.positionComp.displayRect) ~= nil
 end
 
 function AnimComp:draw(positionComp)
@@ -37,7 +41,9 @@ function AnimComp:draw(positionComp)
 
     local currentAnim = self:getCurrentAnim()
     local displayRect = positionComp.displayRect
-    currentAnim:draw(displayRect.x, displayRect.y, displayRect.width, displayRect.height)
+    -- local collisionRect = positionComp:getWorldCollisionRect()
+    -- DrawHelper.drawRect(collisionRect.x, collisionRect.y, collisionRect.width, collisionRect.height)
+    currentAnim:draw(displayRect.x, displayRect.y, displayRect.width, displayRect.height, self.color)
 end
 
 return AnimComp

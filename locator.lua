@@ -8,7 +8,7 @@ Locator = Object:extend()
 
 function Locator:new()
     ---@type Camera
-    self.camera = Camera(0, 0, 800, 600)
+    self.camera = Camera(0, 0, Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT)
     self.lastInput = {}
 
     -- managers
@@ -31,11 +31,10 @@ function Locator:onSetup()
 end
 
 function Locator:update(dt)
-    self.camera:update(dt)
-
     for _, value in pairs(self.managers) do
         value:update(dt)
     end
+    self.camera:update(dt)
 end
 
 function Locator:checkKeyPress(key, isNew)

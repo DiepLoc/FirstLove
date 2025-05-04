@@ -1,4 +1,4 @@
-MoveState = Object:extend()
+MoveState = BaseState:extend()
 
 function MoveState:new()
     return self
@@ -20,7 +20,7 @@ function MoveState:update(subject, dt)
         newVelo.x = newVelo.x + 1
     end
 
-    if positionComp.isGrounded and MyLocator:checkKeyPress("space", true) then
+    if positionComp.isGrounded and MyLocator:checkKeyPress("space", false) then
         positionComp:onJump(dt)
     end
     positionComp.velocity = newVelo

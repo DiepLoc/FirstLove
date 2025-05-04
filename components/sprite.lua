@@ -36,10 +36,10 @@ function Sprite:update(dt)
     end
 end
 
-function Sprite:draw(x, y, width, height)
+function Sprite:draw(x, y, width, height, color)
     local frame = self:getCurrentFrame()
     DrawHelper.drawImage(self.imageName, frame, Rectangle(x, y, width or self.frameWidth, height or self.frameHeight),
-        nil, self.isFlipX, false)
+        color, self.isFlipX, false)
 end
 
 function Sprite:nextFrame()

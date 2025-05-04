@@ -1,3 +1,4 @@
+---@class Vector2
 Vector2 = Object:extend()
 
 -- Constructor
