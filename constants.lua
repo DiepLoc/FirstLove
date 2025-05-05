@@ -4,11 +4,13 @@ Constants = {
     PLAYER_SPEED = 500,
     GROUND_Y = 400,
     TILE_SIZE = 32,
+    ACTION_DISTANCE = 40,
     ARROW_SPEED = 500,
     PLAYER_SIZE = 64,
     WINDOW_WIDTH = 1200,
     WINDOW_HEIGHT = 800,
-    WATER_SPEED_RATE = 0.4,
+    WATER_SPEED_RATE = 0.5,
+    COMMON_ACTION_FPS = 8,
 
     -- game object names
     OBJ_NAME_PLAYER = "PLAYER",
@@ -17,6 +19,7 @@ Constants = {
     OBJ_NAME_CREEPER = "CREEPER",
     OBJ_NAME_OBJECT = "GameObject",
     OBJ_NAME_WATER = "WATER",
+    OBJ_NAME_DMG = "DMG",
 
     -- terrain
     MAP_WIDTH = 500,

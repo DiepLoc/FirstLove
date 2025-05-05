@@ -9,6 +9,10 @@ function GameObjectManager:new()
     return self
 end
 
+function GameObjectManager:addGameObject(gameObject)
+    table.insert(self.gameObjects, gameObject)
+end
+
 function GameObjectManager:onSetup()
     self.player = Factory.getPlayer(1, 0)
     table.insert(self.gameObjects, self.player)
@@ -56,6 +60,7 @@ function GameObjectManager:checkIsCollision(obj, dx, dy)
                         end
                         if block.positionComp.isCollidable then
                             obj:handleCollision(block)
+                            block:handleCollision(obj)
                         end
                     end
                 end
@@ -100,13 +105,13 @@ function GameObjectManager:handleMoving(obj, dx, dy)
     else
         local xMove = not self:checkIsCollision(obj, dx, 0)
         if xMove then
-            return { dx, 0, true }
+            return { dx, 0, dy >= 0 }
         else
             local yMove = not self:checkIsCollision(obj, 0, dy)
             if yMove then
                 return { 0, dy, false }
             else
-                return { 0, 0, true }
+                return { 0, 0, dy >= 0 }
             end
         end
     end
@@ -143,10 +148,16 @@ function GameObjectManager:update(dt)
     end
     self:handleBlocksOnView(function(block, x, y)
         block:update(dt)
-        if (block.isdstroyed) then
-            self.blocks[x][y] = nil
+        if (block.isDestroyed) then
+            if y > (Constants.MAP_HEIGHT - Constants.MAP_WATER_HEIGHT) then
+                self.blocks[x][y] = GameObjectFactory.getWaterBlock(x, y)
+            else
+                self.blocks[x][y] = nil
+            end
         end
     end)
+
+    AddDebugStr("GameObj: " .. #self.gameObjects .. " blocks:" .. #self.blocks)
 end
 
 function GameObjectManager:draw()

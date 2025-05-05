@@ -1,6 +1,7 @@
 MoveState = BaseState:extend()
 
 function MoveState:new()
+    self.subState = NullState()
     return self
 end
 
@@ -25,19 +26,39 @@ function MoveState:update(subject, dt)
     end
     positionComp.velocity = newVelo
 
+    self:checkAction(subject)
 
-    --  anim
-    if positionComp.velocity.x > 0 then
-        subject.animComp:setCurrentAnim("run-right")
-    elseif positionComp.velocity.x < 0 then
-        subject.animComp:setCurrentAnim("run-left")
-    elseif subject.positionComp.lastDirection == "right" then
-        subject.animComp:setCurrentAnim("idle-right")
-    else
-        subject.animComp:setCurrentAnim("idle-left")
+    local newSubState = self.subState:update(subject, dt)
+    if newSubState ~= nil then
+        self.subState = newSubState
+    end
+
+    -- anim
+    if self.subState:is(NullState) then
+        if positionComp.velocity.x > 0 then
+            subject.animComp:setCurrentAnim("run-right")
+        elseif positionComp.velocity.x < 0 then
+            subject.animComp:setCurrentAnim("run-left")
+        elseif subject.positionComp.lastDirection == "right" then
+            subject.animComp:setCurrentAnim("idle-right")
+        else
+            subject.animComp:setCurrentAnim("idle-left")
+        end
     end
 
     return nil
+end
+
+---@param subject GameObject
+function MoveState:checkAction(subject)
+    if not self.subState:is(NullState) then
+        return
+    end
+
+    local isMousePressed, mouseX, mouseY, worldRect = MyLocator:checkMousePress(1)
+    if isMousePressed then
+        self.subState = ExploitState()
+    end
 end
 
 function MoveState:onStop()

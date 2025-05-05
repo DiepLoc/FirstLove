@@ -53,4 +53,11 @@ function Locator:draw()
     end
 end
 
+function Locator:checkMousePress(button)
+    local isPressed = love.mouse.isDown(button)
+    local posX, posY = love.mouse.getPosition()
+    local worldRect = MyLocator.camera:screenToWorld(posX, posY, 0, 0)
+    return isPressed, posX, posY, worldRect
+end
+
 return Locator

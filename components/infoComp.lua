@@ -26,6 +26,15 @@ function InfoComp:checkHasInfo(infoType)
     return hasInfo
 end
 
+function InfoComp:getInfo(infoType)
+    for _, info in pairs(self.info) do
+        if info:is(infoType) then
+            return info
+        end
+    end
+    return nil
+end
+
 function InfoComp:update(subject, dt)
     for _, info in pairs(self.info) do
         info:update(subject, dt)

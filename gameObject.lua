@@ -10,6 +10,9 @@ function GameObject:new(animComp, positionComp, stateComp, name)
   self.stateComp = stateComp or nil
   ---@type InfoComp
   self.infoComp = InfoComp()
+  ---@type InventoryComp
+  self.inventoryComp = nil
+
   self.collisionObjs = {}
 
   self.isDestroyed = false
@@ -20,6 +23,10 @@ end
 function GameObject:update(dt)
   self.animComp:update(self, dt)
   if not self.animComp.isInsideScreen then return end
+
+  if self.inventoryComp then
+    self.inventoryComp:update(self, dt)
+  end
   if self.stateComp then
     self.stateComp:update(self, dt)
   end
@@ -40,6 +47,10 @@ function GameObject:draw()
   self.animComp:draw(self.positionComp)
   if self.infoComp then
     self.infoComp:draw()
+  end
+
+  if self.inventoryComp then
+    self.inventoryComp:draw(self)
   end
   -- self.positionComp:draw()
   -- self.stateComp:draw()

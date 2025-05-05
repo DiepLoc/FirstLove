@@ -50,6 +50,10 @@ function Vector2:lengthSquared()
     return self.x * self.x + self.y * self.y
 end
 
+function Vector2:toTile()
+    return Vector2:new(math.floor(self.x / Constants.TILE_SIZE), math.floor(self.y / Constants.TILE_SIZE))
+end
+
 -- Normalize vector
 function Vector2:normalize()
     local len = self:length()

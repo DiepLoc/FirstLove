@@ -2,6 +2,7 @@
 PositionComp = Object:extend()
 
 function PositionComp:new(x, y, width, height, isBlocked, isCollidable, isVisible)
+    ---@type Rectangle
     self.displayRect = Rectangle(x, y, width, height)
     self.collisionRect = Rectangle(0, 0, width, height)
     self.isBlocked = isBlocked or true

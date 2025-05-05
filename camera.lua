@@ -23,6 +23,14 @@ function Camera:worldToScreen(x, y, width, height)
     return Rectangle(screenX, screenY, screenWidth, screenHeight)
 end
 
+function Camera:screenToWorld(x, y, width, height)
+    local worldX = x / self.scale + self.x
+    local worldY = y / self.scale + self.y
+    local worldWidth = width / self.scale
+    local worldHeight = height / self.scale
+    return Rectangle(worldX, worldY, worldWidth, worldHeight)
+end
+
 function Camera:worldToScreenOrNull(rect)
     local camRect = self:getRect();
     if not camRect:collidesWith(rect) then
