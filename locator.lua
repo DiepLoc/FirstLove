@@ -35,6 +35,10 @@ function Locator:update(dt)
         value:update(dt)
     end
     self.camera:update(dt)
+
+    if MyLocator.gameObjectManager.player then
+        AddDebugStr("current item ind" .. MyLocator.gameObjectManager.player.inventoryComp.currentItemIndex)
+    end
 end
 
 function Locator:checkKeyPress(key, isNew)

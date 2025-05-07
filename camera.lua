@@ -11,7 +11,9 @@ function Camera:new(x, y, width, height)
 end
 
 function Camera:update(dt)
-    local playerCenter = MyLocator.gameObjectManager.player.positionComp.displayRect:getCenter()
+    local player = MyLocator.gameObjectManager.player
+    if not player then return end
+    local playerCenter = player.positionComp.displayRect:getCenter()
     self:setCenterPosition(playerCenter.x, playerCenter.y)
 end
 

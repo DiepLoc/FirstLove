@@ -6,7 +6,8 @@ function AnimComp:new(currentAnimName, anim)
     self:addAnim(currentAnimName, anim)
     self.currentAnimName = currentAnimName
     self.isInsideScreen = true
-    self.color = nil
+    self.color = { 1, 1, 1, 1 }
+    self.baseColor = { 1, 1, 1, 1 }
     return self
 end
 
@@ -33,6 +34,12 @@ end
 function AnimComp:update(subject, dt)
     local currentAnim = self:getCurrentAnim()
     currentAnim:update(dt)
+
+    local lerpR = CommonHelper.lerpValue(self.color[1], self.baseColor[1], 0.05)
+    local lerpG = CommonHelper.lerpValue(self.color[2], self.baseColor[2], 0.05)
+    local lerpB = CommonHelper.lerpValue(self.color[3], self.baseColor[3], 0.05)
+    local lerpA = CommonHelper.lerpValue(self.color[4], self.baseColor[4], 0.05)
+    self.color = { lerpR, lerpG, lerpB, lerpA }
     -- self.isInsideScreen = MyLocator.camera:worldToScreenOrNull(subject.positionComp.displayRect) ~= nil
 end
 

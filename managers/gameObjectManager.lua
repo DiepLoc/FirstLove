@@ -14,8 +14,11 @@ function GameObjectManager:addGameObject(gameObject)
 end
 
 function GameObjectManager:onSetup()
+    ---@type GameObject
     self.player = Factory.getPlayer(1, 0)
     table.insert(self.gameObjects, self.player)
+    -- table.insert(self.gameObjects, Factory.getZombie(10, 10))
+    table.insert(self.gameObjects, Factory.getSkeleton(20, 10))
 
     self.blocks = GameObjectFactory.generateTerrain(Constants.MAP_WIDTH, Constants.MAP_HEIGHT,
         Constants.MAP_GENERATE_SCALE, Constants.MAP_GENERATE_OFFSET, Constants.MAP_WATER_HEIGHT)
@@ -42,23 +45,25 @@ function GameObjectManager:getObjByCondition(func)
 end
 
 ---@param obj GameObject
-function GameObjectManager:checkIsCollision(obj, dx, dy)
+function GameObjectManager:checkAndHandleCollision(obj, dx, dy)
     local collisionRect = obj.positionComp:getWorldCollisionRect()
     local collisionRect2 = Rectangle(collisionRect.x + dx, collisionRect.y + dy, collisionRect.width,
         collisionRect.height)
     local tileRect = CommonHelper.getTileRect(Rectangle(collisionRect.x + dx, collisionRect.y + dy, collisionRect.width,
         collisionRect.height))
     local isBlocked = false
+
+    -- check with map tiles
     for x = tileRect.x - 1, tileRect.right + 2 do
         for y = tileRect.y - 1, tileRect.bottom + 2 do
             if self.blocks[x] and self.blocks[x][y] then
                 local block = self.blocks[x][y]
                 if block.positionComp.isBlocked or block.positionComp.isCollidable then
                     if block.positionComp:getWorldCollisionRect():collidesWith(collisionRect2) then
-                        if block.positionComp.isBlocked then
+                        if block.positionComp.isBlocked and obj.positionComp.isBlocked then
                             isBlocked = true
                         end
-                        if block.positionComp.isCollidable then
+                        if block.positionComp.isCollidable and obj.positionComp.isCollidable then
                             obj:handleCollision(block)
                             block:handleCollision(obj)
                         end
@@ -67,51 +72,45 @@ function GameObjectManager:checkIsCollision(obj, dx, dy)
             end
         end
     end
-    return isBlocked
-end
 
-function GameObjectManager:updateIsGrounded(obj)
-    local tileSize = Constants.TILE_SIZE
-    local collisionRect = obj.positionComp:getWorldCollisionRect()
-    local x1 = math.floor((collisionRect.x) / tileSize) + 1
-    local x2 = math.floor((collisionRect.right - 1) / tileSize) + 1
-    local y = math.floor((collisionRect.bottom + 1) / tileSize)
+    -- check with other objects
+    for _, other in pairs(self.gameObjects) do
+        if other ~= obj and not other.isDestroyed then
+            local otherBounds = other.positionComp:getWorldCollisionRect()
 
-    AddDebugStr("x1:" .. x1 .. " x2:" .. x2 .. " y:" .. y)
+            if collisionRect2:collidesWith(otherBounds) then
+                if obj.positionComp.isBlocked and other.positionComp.isBlocked then
+                    isBlocked = true
+                end
 
-    local isGrounded = false
-
-    for x = x1, x2 do
-        local column = self.blocks[x]
-        if column then
-            local blockBelow = column[y]
-            if blockBelow and blockBelow.positionComp.isBlocked then
-                isGrounded = true
-                break
+                if obj.positionComp.isCollidable and other.positionComp.isCollidable then
+                    obj:handleCollision(other)
+                    other:handleCollision(obj)
+                end
             end
         end
     end
-    AddDebugStr("isGrounded:" .. tostring(isGrounded))
-    return isGrounded
+    return isBlocked
 end
 
+-- return newDx, newDy, isGrounded
 function GameObjectManager:handleMoving(obj, dx, dy)
     if dx == 0 and dy == 0 then
-        return { 0, 0, true }
+        return 0, 0, true
     end
-    local xyMove = not self:checkIsCollision(obj, dx, dy)
+    local xyMove = not self:checkAndHandleCollision(obj, dx, dy)
     if xyMove then
-        return { dx, dy, false }
+        return dx, dy, false
     else
-        local xMove = not self:checkIsCollision(obj, dx, 0)
+        local xMove = not self:checkAndHandleCollision(obj, dx, 0)
         if xMove then
-            return { dx, 0, dy >= 0 }
+            return dx, 0, dy >= 0
         else
-            local yMove = not self:checkIsCollision(obj, 0, dy)
+            local yMove = not self:checkAndHandleCollision(obj, 0, dy)
             if yMove then
-                return { 0, dy, false }
+                return 0, dy, false
             else
-                return { 0, 0, dy >= 0 }
+                return 0, 0, dy >= 0
             end
         end
     end
@@ -156,6 +155,10 @@ function GameObjectManager:update(dt)
             end
         end
     end)
+
+    if self.player and self.player.isDestroyed then
+        self.player = nil
+    end
 
     AddDebugStr("GameObj: " .. #self.gameObjects .. " blocks:" .. #self.blocks)
 end

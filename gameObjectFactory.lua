@@ -21,13 +21,16 @@ function GameObjectFactory.getPlayer(tileX, tileY)
     local positionComp = PositionComp(tileX * Constants.TILE_SIZE, tileY * Constants.TILE_SIZE, Constants.PLAYER_SIZE,
         Constants.PLAYER_SIZE):setCollisionRect(5 / 16 * Constants.PLAYER_SIZE, 3 / 16 * Constants.PLAYER_SIZE,
         6 / 16 * Constants.PLAYER_SIZE, 13 / 16 * Constants.PLAYER_SIZE)
-    local stateComp = StateComp(MoveState())
+    local stateComp = StateComp(PlayerState())
     local obj = GameObject(anim, positionComp, stateComp, Constants.OBJ_NAME_PLAYER)
     obj.infoComp:addInfo(CommonCharInfo())
+    obj.inventoryComp = InventoryComp()
+    obj.inventoryComp:addItem(InventoryItemFactory.getSword(), true)
+    obj.inventoryComp:addItem(InventoryItemFactory.getSword())
     return obj
 end
 
-function GameObjectFactory.getMonster(tileX, tileY, row, hasAttack)
+function GameObjectFactory.getMobObj(tileX, tileY, row, hasAttack, name, attkRange)
     local anim = AnimComp("idle-right", Sprite("characters", 16, 16, 1, row, 1, 0))
         :addAnim("idle-left", Sprite("characters", 16, 16, 1, row, 1, 0):setFlipX())
         :addAnim("run-right", Sprite("characters", 16, 16, 4, row + 1, Constants.COMMON_ACTION_FPS, 0))
@@ -40,8 +43,25 @@ function GameObjectFactory.getMonster(tileX, tileY, row, hasAttack)
     local positionComp = PositionComp(tileX * Constants.TILE_SIZE, tileY * Constants.TILE_SIZE, Constants.PLAYER_SIZE,
         Constants.PLAYER_SIZE):setCollisionRect(5 / 16 * Constants.PLAYER_SIZE, 3 / 16 * Constants.PLAYER_SIZE,
         6 / 16 * Constants.PLAYER_SIZE, 13 / 16 * Constants.PLAYER_SIZE)
-    local stateComp = StateComp(MoveState())
-    local obj = GameObject(anim, positionComp, stateComp, Constants.OBJ_NAME_PLAYER)
+    positionComp.speed = Constants.MOD_SPEED
+    positionComp.jump_gravity = Constants.MOB_GRAVITY_JUMP
+    local getAttkStateCb = hasAttack and (function(parent, direction) return ActionState(parent, direction) end) or nil
+    local stateComp = StateComp(SimpleAiState(getAttkStateCb, attkRange))
+    local obj = GameObject(anim, positionComp, stateComp, name)
+    obj.infoComp:addInfo(CommonCharInfo())
+    return obj
+end
+
+function GameObjectFactory.getZombie(tileX, tileY)
+    local obj = GameObjectFactory.getMobObj(tileX, tileY, 4, false, Constants.OBJ_NAME_ZOMBIE)
+    obj.infoComp:addInfo(DmgInfo(1, 0, { Constants.OBJ_NAME_PLAYER }, false))
+    return obj
+end
+
+function GameObjectFactory.getSkeleton(tileX, tileY)
+    local obj = GameObjectFactory.getMobObj(tileX, tileY, 6, true, Constants.OBJ_NAME_SKELETON, 200)
+    obj.inventoryComp = InventoryComp()
+    obj.inventoryComp:addItem(InventoryItemFactory.getBow(), true)
     return obj
 end
 
@@ -78,23 +98,26 @@ function GameObjectFactory.getLeafBlock(tileX, tileY)
     end)
 end
 
-function GameObjectFactory.getDmgObj(x, y)
+function GameObjectFactory.getDmgObj(x, y, dmgInfo, dmgSize)
+    dmgSize = dmgSize or Constants.EXPLOIT_SIZE
     local anim = AnimComp("idle-right", Sprite("general", 16, 16, 1, 0, 1, 3))
-    local positionComp = PositionComp(x, y, 1,
-        1)
+    local positionComp = PositionComp(x - dmgSize / 2, y - dmgSize / 2, dmgSize, dmgSize)
+    positionComp.isBlocked = false
     local stateComp = StateComp(ShortLifeState())
     local obj = GameObject(anim, positionComp, stateComp, Constants.OBJ_NAME_DMG)
-    obj.infoComp:addInfo(DmgInfo(0, 1))
+    obj.infoComp:addInfo(dmgInfo or DmgInfo(0, 1))
     return obj
 end
 
-function GameObjectFactory.getArrow(tileX, tileY, directionVec, speed)
+function GameObjectFactory.getArrow(x, y, directionVec, speed, dmgInfo)
     local anim = AnimComp("idle", Sprite("general", 16, 16, 1, 2, 1, 0))
-    local positionComp = PositionComp(tileX * Constants.TILE_SIZE, tileY * Constants.TILE_SIZE, Constants.TILE_SIZE,
-        Constants.TILE_SIZE):setCollisionRect(6 * Constants.TILE_SIZE, 6 * Constants.TILE_SIZE, 4 * Constants.TILE_SIZE,
-        4 * Constants.TILE_SIZE):setZeroGravity()
-    local stateComp = StateComp(FlyState(directionVec, speed or 100))
+    local positionComp = PositionComp(x - Constants.TILE_SIZE / 2, y - Constants.TILE_SIZE / 2, Constants.TILE_SIZE,
+        Constants.TILE_SIZE):setCollisionRect(6 * 2, 6 * 2, 4 * 2,
+        4 * 2)
+    positionComp.isBlocked = false
+    local stateComp = StateComp(FlyState(directionVec, speed or Constants.ARROW_SPEED))
     local obj = GameObject(anim, positionComp, stateComp)
+    obj.infoComp:addInfo(dmgInfo or DmgInfo(1, 0))
     return obj
 end
 
@@ -104,12 +127,19 @@ function GameObjectFactory.generateTree(blocks, x, y, height)
     end
 
     local leafHeight = height < 3 and 2 or math.random() < 0.3 and 3 or 2
-    local leafWidth = height < 3 and 1 or math.random() < 0.3 and 2 or 1
-    for i = x - leafWidth, x + leafWidth do
-        for k = y - height - 1, y - height - 1 - leafHeight, -1 do
+    local leafWidthLeft = height < 3 and 2 or math.random() < 0.3 and 3 or 2
+    local leafWidthRight = leafWidthLeft
+    for k = y - height - 1, y - height - 1 - leafHeight, -1 do
+        for i = x - leafWidthLeft, x + leafWidthRight do
             if blocks[i] then
                 blocks[i][k] = GameObjectFactory.getLeafBlock(i, k)
             end
+        end
+        if leafWidthLeft > 0 and math.random() < 0.6 then
+            leafWidthLeft = leafWidthLeft - 1
+            leafWidthRight = leafWidthRight - 1
+        else
+            -- if leafWidthRight >= 0 and math.random() < 0.4 then leafWidthRight = leafWidthRight - 1 end
         end
     end
 end

@@ -60,7 +60,7 @@ function Vector2:normalize()
     if len == 0 then
         return Vector2:new(0, 0)
     else
-        return self / len
+        return Vector2(self.x / len, self.y / len)
     end
 end
 

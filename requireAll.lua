@@ -8,18 +8,22 @@ Rectangle       = require "utils.rectangle"
 -- Load components
 --- states
 BaseState       = require "components.states.baseState"
-MoveState       = require "components.states.moveState"
+PlayerState     = require "components.states.playerState"
 FlyState        = require "components.states.flyState"
 NullState       = require "components.states.nullState"
 ShortLifeState  = require "components.states.shortLifeState"
-ExploitState    = require "components.states.exploitState"
+ActionState     = require "components.states.actionState"
+SimpleAiState   = require "components.states.simpleAiState"
 
 --- info
 BaseInfo        = require "components.infoItems.baseInfo"
 CommonBlockInfo = require "components.infoItems.commonBlockInfo"
 CommonCharInfo  = require "components.infoItems.commonCharInfo"
-ExploitInfo     = require "components.infoItems.exploitInfo"
 DmgInfo         = require "components.infoItems.dmgInfo"
+
+--- items
+BaseInvItem     = require "components.items.baseInvItem"
+WeaponItem      = require "components.items.weaponItem"
 
 --- components
 Sprite          = require "components.sprite"
@@ -34,6 +38,7 @@ GameObject      = require "gameObject"
 DrawHelper      = require "drawHelper"
 Constants       = require "constants"
 Factory         = require "gameObjectFactory"
+ItemFactory     = require "inventoryItemFactory"
 CommonHelper    = require "commonHelper"
 
 

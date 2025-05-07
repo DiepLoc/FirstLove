@@ -45,12 +45,12 @@ function DrawHelper.drawImage(imageName, sourceRect, destRect, color, flipX, fli
         drawY = drawY + screenRect.height -- move origin to the bottom edge
     end
 
-    if (imageName == "general") then
-        DrawHelper.addSpriteToSpritebatch(quad, math.floor(drawX), math.floor(drawY), scaleX, scaleY)
-    else
-        love.graphics.draw(image, quad, math.floor(drawX), math.floor(drawY), 0, scaleX, scaleY)
-    end
-    -- love.graphics.draw(image, quad, drawX, drawY, 0, scaleX, scaleY)
+    -- if (imageName == "general") then
+    --     DrawHelper.addSpriteToSpritebatch(quad, math.floor(drawX), math.floor(drawY), scaleX, scaleY)
+    -- else
+    --     love.graphics.draw(image, quad, math.floor(drawX), math.floor(drawY), 0, scaleX, scaleY)
+    -- end
+    love.graphics.draw(image, quad, drawX, drawY, 0, scaleX, scaleY)
     love.graphics.setColor(1, 1, 1, 1) -- Reset color to white
 end
 

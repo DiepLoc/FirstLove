@@ -1,8 +1,9 @@
 CommonBlockInfo = BaseInfo:extend()
 
-function CommonBlockInfo:new(isWater, isExploit)
+function CommonBlockInfo:new(isWater, isExploitable, hardness)
     self.isWater = isWater or false
-    self.isExploitable = isExploit or false
+    self.isExploitable = isExploitable or false
+    self.hardness = hardness or 3
 end
 
 ---@param subject GameObject
@@ -15,7 +16,11 @@ function CommonBlockInfo:handleCollision(subject, otherObj, dt)
     if self.isExploitable and otherObj.infoComp:checkHasInfo(DmgInfo) then
         local dmgInfo = otherObj.infoComp:getInfo(DmgInfo)
         if dmgInfo and dmgInfo.exploitDmg > 0 then
-            subject.isDestroyed = true
+            self.hardness = self.hardness - dmgInfo.exploitDmg
+            subject.animComp.color = Constants.DAMAGED_COLOR
+            if self.hardness <= 0 then
+                subject.isDestroyed = true
+            end
         end
     end
 end

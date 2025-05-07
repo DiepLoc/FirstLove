@@ -23,6 +23,7 @@ end
 function GameObject:update(dt)
   self.animComp:update(self, dt)
   if not self.animComp.isInsideScreen then return end
+  self.collisionObjs = {}
 
   if self.inventoryComp then
     self.inventoryComp:update(self, dt)
@@ -38,7 +39,10 @@ function GameObject:update(dt)
 end
 
 function GameObject:handleCollision(otherObj, dt)
-  self.infoComp:handleCollision(self, otherObj, dt)
+  if self.collisionObjs[otherObj] == nil then
+    self.collisionObjs[otherObj] = otherObj
+    self.infoComp:handleCollision(self, otherObj, dt)
+  end
 end
 
 function GameObject:draw()

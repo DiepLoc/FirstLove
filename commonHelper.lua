@@ -10,7 +10,15 @@ end
 function CommonHelper.getDistance(x, y, x2, y2)
     local dx = x2 - x
     local dy = y2 - y
-    return math.sqrt(dx * dx + dy * dy)
+    return math.sqrt(dx * dx + dy * dy), math.abs(dx), math.abs(dy)
+end
+
+function CommonHelper.getRandomResultByTime(time, dt)
+    return math.random() < dt / time
+end
+
+function CommonHelper.getDirection(x2, y2, x1, y1)
+    return Vector2(x2 - x1, y2 - y1)
 end
 
 function CommonHelper.get4dDirectionFromDirection(x2, y2, x1, y1)
@@ -29,6 +37,24 @@ function CommonHelper.get4dDirectionFromDirection(x2, y2, x1, y1)
         return Vector2(0, -1) -- up
     end
     error("Invalid angle: " .. degrees)
+end
+
+function CommonHelper.get2dDirectionFromDirection(x2, y2, x1, y1)
+    local dx = x2 - x1
+    local dy = y2 - y1
+    local aTan = math.atan2(dy, dx)
+    local degrees = math.deg(aTan)
+    degrees = (degrees + 360) % 360
+    if degrees > 270 or degrees < 90 then
+        return Vector2(1, 0)  -- right
+    else
+        return Vector2(-1, 0) -- left
+    end
+    error("Invalid angle: " .. degrees)
+end
+
+function CommonHelper.lerpValue(initVal, targetVal, factor)
+    return initVal + (targetVal - initVal) * factor
 end
 
 return CommonHelper
