@@ -4,7 +4,7 @@ function GameObjectFactory.getSolidBlock(tileX, tileY, column, row, cb)
     local anim = AnimComp("idle", Sprite("general", 16, 16, 1, row, 1, column))
     local positionComp = PositionComp(tileX * Constants.TILE_SIZE, tileY * Constants.TILE_SIZE, Constants.TILE_SIZE,
         Constants.TILE_SIZE):setZeroGravity()
-    local obj = GameObject(anim, positionComp)
+    local obj = GameObject(anim, positionComp, nil, Constants.OBJ_NAME_BLOCK)
     if cb then
         cb(obj)
     end
@@ -23,10 +23,11 @@ function GameObjectFactory.getPlayer(tileX, tileY)
         6 / 16 * Constants.PLAYER_SIZE, 13 / 16 * Constants.PLAYER_SIZE)
     local stateComp = StateComp(PlayerState())
     local obj = GameObject(anim, positionComp, stateComp, Constants.OBJ_NAME_PLAYER)
-    obj.infoComp:addInfo(CommonCharInfo())
+    obj.infoComp:addInfo(CommonCharInfo():setHungryable())
     obj.inventoryComp = InventoryComp()
-    obj.inventoryComp:addItem(InventoryItemFactory.getSword(), true)
-    obj.inventoryComp:addItem(InventoryItemFactory.getSword())
+    obj.inventoryComp:addItem(InventoryItemFactory.getPickaxe(), true)
+    -- obj.inventoryComp:addItem(InventoryItemFactory.getSword())
+    -- obj.inventoryComp:addItem(InventoryItemFactory.getBlock(Constants.BLOCK_ITEM_DIRT), true)
     return obj
 end
 
@@ -98,6 +99,13 @@ function GameObjectFactory.getLeafBlock(tileX, tileY)
     end)
 end
 
+function GameObjectFactory.getAppleBlock(tileX, tileY)
+    return GameObjectFactory.getSolidBlock(tileX, tileY, 4, 0, function(obj)
+        obj.infoComp:addInfo(CommonBlockInfo(false, true))
+        obj.name = Constants.OBJ_NAME_APPLE
+    end)
+end
+
 function GameObjectFactory.getDmgObj(x, y, dmgInfo, dmgSize)
     dmgSize = dmgSize or Constants.EXPLOIT_SIZE
     local anim = AnimComp("idle-right", Sprite("general", 16, 16, 1, 0, 1, 3))
@@ -121,6 +129,18 @@ function GameObjectFactory.getArrow(x, y, directionVec, speed, dmgInfo)
     return obj
 end
 
+function GameObjectFactory.getLootObj(x, y, lootItem)
+    local randomX = math.random(-10, 10)
+    local anim = AnimComp("idle", Sprite("general", 16, 16, 1, 2, 1, 0))
+    local positionComp = PositionComp(x + randomX - Constants.TILE_SIZE / 2, y - Constants.TILE_SIZE / 2,
+        Constants.TILE_SIZE,
+        Constants.TILE_SIZE):setCollisionRect(6 * 2, 6 * 2, 4 * 2,
+        4 * 2)
+    local obj = GameObject(anim, positionComp)
+    obj.infoComp:addInfo(LootInfo(lootItem or InventoryItemFactory.getBlockItem(Constants.BLOCK_ITEM_DIRT)))
+    return obj
+end
+
 function GameObjectFactory.generateTree(blocks, x, y, height)
     for i = y, y - height, -1 do
         blocks[x][i] = GameObjectFactory.getTreeBlock(x, i)
@@ -132,7 +152,11 @@ function GameObjectFactory.generateTree(blocks, x, y, height)
     for k = y - height - 1, y - height - 1 - leafHeight, -1 do
         for i = x - leafWidthLeft, x + leafWidthRight do
             if blocks[i] then
-                blocks[i][k] = GameObjectFactory.getLeafBlock(i, k)
+                if k == y - height - 1 and math.random() < Constants.APPLE_SPAWN_RATE then
+                    blocks[i][k] = GameObjectFactory.getAppleBlock(i, k)
+                else
+                    blocks[i][k] = GameObjectFactory.getLeafBlock(i, k)
+                end
             end
         end
         if leafWidthLeft > 0 and math.random() < 0.6 then

@@ -8,6 +8,13 @@ if arg[2] == "debug" then
     require("lldebugger").start()
 end
 
+function love.wheelmoved(x, y)
+    if y >= 1 then
+        MyLocator.gameObjectManager.player.inventoryComp:onChangeCurrentItem(-1)
+    elseif y <= -1 then
+        MyLocator.gameObjectManager.player.inventoryComp:onChangeCurrentItem(1)
+    end
+end
 
 function love.keypressed(key)
     if key == "escape" then

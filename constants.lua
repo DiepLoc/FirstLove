@@ -17,9 +17,13 @@ Constants = {
     WATER_SPEED_RATE = 0.5,
     COMMON_ACTION_FPS = 8,
     PLAYER_ACTION_DELAY = 0.6,
+    APPLE_SPAWN_RATE = 0.05,
     RAMDOM_MOB_ATTACK_TIME = 3,
     DMG_INERTIA = 100,
-    DAMAGED_COLOR = { 0.3, 0.3, 0.3, 1 },
+    HUNGER_DMG_DELAY_TIME = 5,
+    HUNGER_SPEED = 1 / 60, -- 1 per min
+    BLOCK_DAMAGED_COLOR = { 0.3, 0.3, 0.3, 1 },
+    OBJ_DAMAGED_COLOR = { 1, 0, 0, 1 },
 
     -- game object names
     OBJ_NAME_PLAYER = "PLAYER",
@@ -29,6 +33,8 @@ Constants = {
     OBJ_NAME_OBJECT = "GameObject",
     OBJ_NAME_WATER = "WATER",
     OBJ_NAME_DMG = "DMG",
+    OBJ_NAME_BLOCK = "BLOCK",
+    OBJ_NAME_APPLE = "APPLE",
 
     -- terrain
     MAP_WIDTH = 500,
@@ -37,11 +43,43 @@ Constants = {
     MAP_GENERATE_SCALE = 0.02,
     MAP_GENERATE_OFFSET = 0,
 
+    -- item names
+    ITEM_PICKAXE = "ITEM_PICKAXE",
+    ITEM_SWORD = "ITEM_SWORD",
+    ITEM_BOW = "ITEM_BOW",
+    ITEM_ARROW = "ITEM_ARROW",
+    ITEM_APPLE = "ITEM_APPLE",
+    ITEM_BLOCK_DIRT = "ITEM_BLOCK_DIRT",
+    ITEM_BLOCK_LEAF = "ITEM_BLOCK_LEAF",
+    ITEM_BLOCK_IRON = "ITEM_BLOCK_IRON",
+    ITEM_BLOCK_DIAMOND = "ITEM_BLOCK_DIAMOND",
+
     -- weapon types
     WEAPON_TYPE_MELEE_2D = "WEAPON_TYPE_MELEE_2D",
     WEAPON_TYPE_MELEE_4D = "WEAPON_TYPE_MELEE_4D",
     WEAPON_TYPE_RANGE = "WEAPON_TYPE_RANGE",
     WEAPON_TYPE_NONE = "WEAPON_TYPE_NONE",
+
+    -- block item type
+    BLOCK_ITEM_DIRT = "BLOCK_ITEM_DIRT",
+    BLOCK_ITEM_LEAF = "BLOCK_ITEM_LEAF",
+
+    -- game events
+    EVENT_GAMEOBJ_DESTROYED = "EVENT_GAMEOBJ_DESTROYED",
+    EVENT_DROP_ITEM = "EVENT_DROP_ITEM",
+
+    -- item image mapping
+    ITEM_IMAGE_MAPPING = {
+        ITEM_PICKAXE = { 3, 3 },
+        ITEM_SWORD = { 2, 3 },
+        ITEM_BOW = { 1, 3 },
+        ITEM_ARROW = { 0, 3 },
+        ITEM_APPLE = { 4, 3 },
+        ITEM_BLOCK_DIRT = { 1, 0 },
+        ITEM_BLOCK_LEAF = { 3, 0 },
+        ITEM_BLOCK_IRON = { 7, 0 },
+        ITEM_BLOCK_DIAMOND = { 8, 0 },
+    },
 
 }
 return Constants

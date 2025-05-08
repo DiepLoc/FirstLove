@@ -48,7 +48,7 @@ function PlayerState:checkAction(subject, dt)
         self.remainingNextActionTime = self.remainingNextActionTime - dt
     end
     local currentItem = subject.inventoryComp:getCurrentItemOrNull()
-    if self.remainingNextActionTime > 0 or not self.subState:is(NullState) or not currentItem or not currentItem:is(WeaponItem) then
+    if self.remainingNextActionTime > 0 or not self.subState:is(NullState) or not currentItem or not currentItem:checkHasLeftAction() then
         return
     end
 

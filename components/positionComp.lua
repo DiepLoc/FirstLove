@@ -91,6 +91,11 @@ function PositionComp:getWorldCollisionRect()
         self.collisionRect.width, self.collisionRect.height)
 end
 
+---@return Vector2
+function PositionComp:getCollisionCenter()
+    return self:getWorldCollisionRect():getCenter()
+end
+
 function PositionComp:setCollisionRect(x, y, width, height)
     self.collisionRect = Rectangle(x, y, width, height)
     return self

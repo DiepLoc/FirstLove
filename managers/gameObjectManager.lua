@@ -13,6 +13,46 @@ function GameObjectManager:addGameObject(gameObject)
     table.insert(self.gameObjects, gameObject)
 end
 
+function GameObjectManager:checkValidLinkedBlock(x, y)
+    if x < 1 or x > #self.blocks or y < 1 or y > #self.blocks[x] then
+        return false
+    end
+    return self.blocks[x][y] ~= nil
+end
+
+function GameObjectManager:addBlock(block, x, y, shouldOverwrite, addMidAir)
+    if x < 1 or x > #self.blocks or y < 1 or y > #self.blocks[x] then
+        return false
+    end
+
+    if not addMidAir and not self:checkValidLinkedBlock(x, y - 1) and not self:checkValidLinkedBlock(x, y + 1)
+        and not self:checkValidLinkedBlock(x - 1, y) and not self:checkValidLinkedBlock(x + 1, y) then
+        return false
+    end
+
+    if block.positionComp.isBlocked then
+        for _, obj in pairs(self.gameObjects) do
+            local collisionRect = obj.positionComp:getWorldCollisionRect()
+            local blockRect = block.positionComp:getWorldCollisionRect()
+            if obj.positionComp.isBlocked and collisionRect:collidesWith(blockRect) then
+                return false
+            end
+        end
+    end
+
+    if self.blocks[x][y] then
+        if shouldOverwrite or self.blocks[x][y].name == Constants.OBJ_NAME_WATER then
+            self.blocks[x][y] = block
+            return true
+        else
+            return false
+        end
+    else
+        self.blocks[x][y] = block
+        return true
+    end
+end
+
 function GameObjectManager:onSetup()
     ---@type GameObject
     self.player = Factory.getPlayer(1, 0)

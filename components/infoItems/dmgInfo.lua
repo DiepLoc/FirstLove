@@ -28,8 +28,7 @@ function DmgInfo:handleCollision(subject, otherObj, dt)
     if self:checkIsTarget(otherObj.name) then
         local otherCharInfo = otherObj.infoComp:getInfo(CommonCharInfo)
         if otherCharInfo then
-            otherCharInfo.health = otherCharInfo.health - self.damage
-            otherObj.animComp.color = Constants.DAMAGED_COLOR
+            otherCharInfo:onDamaged(otherObj, self.damage)
             local dmgInertia = self:getDmgDirection(subject, otherObj):normalize() * Constants.DMG_INERTIA
             otherObj.positionComp:addInertia(dmgInertia.x, dmgInertia.y)
         end

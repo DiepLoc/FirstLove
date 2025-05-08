@@ -20,10 +20,14 @@ BaseInfo        = require "components.infoItems.baseInfo"
 CommonBlockInfo = require "components.infoItems.commonBlockInfo"
 CommonCharInfo  = require "components.infoItems.commonCharInfo"
 DmgInfo         = require "components.infoItems.dmgInfo"
+LootInfo        = require "components.infoItems.lootInfo"
 
 --- items
 BaseInvItem     = require "components.items.baseInvItem"
 WeaponItem      = require "components.items.weaponItem"
+BlockItem       = require "components.items.blockItem"
+ConsumableItem  = require "components.items.consumableItem"
+BasicItem       = require "components.items.basicItem"
 
 --- components
 Sprite          = require "components.sprite"

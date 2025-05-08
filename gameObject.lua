@@ -39,6 +39,7 @@ function GameObject:update(dt)
 end
 
 function GameObject:handleCollision(otherObj, dt)
+  -- if otherObj.isDestroyed then return end
   if self.collisionObjs[otherObj] == nil then
     self.collisionObjs[otherObj] = otherObj
     self.infoComp:handleCollision(self, otherObj, dt)

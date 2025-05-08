@@ -21,6 +21,10 @@ function CommonHelper.getDirection(x2, y2, x1, y1)
     return Vector2(x2 - x1, y2 - y1)
 end
 
+function CommonHelper.getTilePos(pos)
+    return Vector2(math.floor(pos.x / Constants.TILE_SIZE), math.floor(pos.y / Constants.TILE_SIZE))
+end
+
 function CommonHelper.get4dDirectionFromDirection(x2, y2, x1, y1)
     local dx = x2 - x1
     local dy = y2 - y1

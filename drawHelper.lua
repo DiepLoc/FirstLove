@@ -15,8 +15,12 @@ function DrawHelper.addSpriteToSpritebatch(quad, x, y, sx, sy)
     spritebatch:add(quad, x, y, 0, sx, sy)
 end
 
-function DrawHelper.drawImage(imageName, sourceRect, destRect, color, flipX, flipY)
-    local screenRect = MyLocator.camera:worldToScreenOrNull(destRect)
+function DrawHelper.drawText(text, x, y, scale)
+    love.graphics.print(text, x, y, nil, scale, scale)
+end
+
+function DrawHelper.drawImage(imageName, sourceRect, destRect, color, flipX, flipY, isScreenPos)
+    local screenRect = not isScreenPos and MyLocator.camera:worldToScreenOrNull(destRect) or isScreenPos and destRect
     if not screenRect then
         return
     end
@@ -54,8 +58,9 @@ function DrawHelper.drawImage(imageName, sourceRect, destRect, color, flipX, fli
     love.graphics.setColor(1, 1, 1, 1) -- Reset color to white
 end
 
-function DrawHelper.drawRect(x, y, width, height, color)
-    local screenRect = MyLocator.camera:worldToScreenOrNull(Rectangle(x, y, width, height))
+function DrawHelper.drawRect(x, y, width, height, color, isScreenPos)
+    local screenRect = not isScreenPos and MyLocator.camera:worldToScreenOrNull(Rectangle(x, y, width, height)) or
+        isScreenPos and Rectangle(x, y, width, height)
     if not screenRect then
         return
     end
