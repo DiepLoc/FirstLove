@@ -16,6 +16,10 @@ function AnimComp:addAnim(name, anim)
     return self
 end
 
+function AnimComp:checkHasAnim(name)
+    return self.anims[name]
+end
+
 function AnimComp:getCurrentAnim()
     return self.anims[self.currentAnimName]
 end

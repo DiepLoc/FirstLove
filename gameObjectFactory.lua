@@ -18,6 +18,9 @@ function GameObjectFactory.getPlayer(tileX, tileY)
         :addAnim("run-left", Sprite("characters", 16, 16, 4, 1, Constants.COMMON_ACTION_FPS, 0):setFlipX())
         :addAnim("attack-right", Sprite("characters", 16, 16, 3, 2, Constants.COMMON_ACTION_FPS, 0))
         :addAnim("attack-left", Sprite("characters", 16, 16, 3, 2, Constants.COMMON_ACTION_FPS, 0):setFlipX())
+        :addAnim("attack-range-right", Sprite("characters", 16, 16, 3, 3, Constants.COMMON_ACTION_FPS, 0))
+        :addAnim("attack-range-left", Sprite("characters", 16, 16, 3, 3, Constants.COMMON_ACTION_FPS, 0):setFlipX())
+        :addAnim("dying", Sprite("characters", 16, 16, 5, 12, 5, 0))
     local positionComp = PositionComp(tileX * Constants.TILE_SIZE, tileY * Constants.TILE_SIZE, Constants.PLAYER_SIZE,
         Constants.PLAYER_SIZE):setCollisionRect(5 / 16 * Constants.PLAYER_SIZE, 3 / 16 * Constants.PLAYER_SIZE,
         6 / 16 * Constants.PLAYER_SIZE, 13 / 16 * Constants.PLAYER_SIZE)
@@ -26,43 +29,94 @@ function GameObjectFactory.getPlayer(tileX, tileY)
     obj.infoComp:addInfo(CommonCharInfo():setHungryable())
     obj.inventoryComp = InventoryComp()
     obj.inventoryComp:addItem(InventoryItemFactory.getPickaxe(), true)
-    -- obj.inventoryComp:addItem(InventoryItemFactory.getSword())
-    -- obj.inventoryComp:addItem(InventoryItemFactory.getBlock(Constants.BLOCK_ITEM_DIRT), true)
+    obj.inventoryComp:addItem(InventoryItemFactory.getSword())
+    obj.inventoryComp:addItem(InventoryItemFactory.getBow(), true)
+    obj.inventoryComp:addItem(InventoryItemFactory.getArrow():setStack(10))
+    obj.inventoryComp:addItem(InventoryItemFactory.getBlockItem(Constants.OBJ_NAME_BLOCK):setStack(50))
+    obj.inventoryComp:addItem(InventoryItemFactory.getEyeOfEnderItem())
+    obj.inventoryComp:addItem(InventoryItemFactory.getEyeOfEnderItem():setStack(20))
     return obj
 end
 
-function GameObjectFactory.getMobObj(tileX, tileY, row, hasAttack, name, attkRange)
-    local anim = AnimComp("idle-right", Sprite("characters", 16, 16, 1, row, 1, 0))
-        :addAnim("idle-left", Sprite("characters", 16, 16, 1, row, 1, 0):setFlipX())
-        :addAnim("run-right", Sprite("characters", 16, 16, 4, row + 1, Constants.COMMON_ACTION_FPS, 0))
-        :addAnim("run-left", Sprite("characters", 16, 16, 4, row + 1, Constants.COMMON_ACTION_FPS, 0):setFlipX())
-    if hasAttack then
-        anim:addAnim("attack-right", Sprite("characters", 16, 16, 3, row + 2, Constants.COMMON_ACTION_FPS, 0))
-        anim:addAnim("attack-left", Sprite("characters", 16, 16, 3, row + 2, Constants.COMMON_ACTION_FPS, 0):setFlipX())
+-- function GameObjectFactory.getMobObj(tileX, tileY, row, attackAnim, name, attkRange, isHuge)
+---@return GameObject
+function GameObjectFactory.getMobObj(tileX, tileY, row, name, data)
+    local frameHeight = (data.yScale or 1) * 16
+    local frameWidth = (data.xScale or 1) * 16
+    local anim = AnimComp("idle-right", Sprite("characters", frameWidth, frameHeight, 1, row, 1, 0))
+        :addAnim("idle-left", Sprite("characters", frameWidth, frameHeight, 1, row, 1, 0):setFlipX())
+        :addAnim("run-right", Sprite("characters", frameWidth, frameHeight, 4, row + 1, Constants.COMMON_ACTION_FPS, 0))
+        :addAnim("run-left",
+            Sprite("characters", frameWidth, frameHeight, 4, row + 1, Constants.COMMON_ACTION_FPS, 0):setFlipX())
+        :addAnim("dying", Sprite("characters", 16, 16, 5, 12, 5, 0))
+    if data.attackAnim then
+        anim:addAnim(data.attackAnim .. "-right",
+            Sprite("characters", frameWidth, frameHeight, 3, row + 2, Constants.COMMON_ACTION_FPS, 0))
+        anim:addAnim(data.attackAnim .. "-left",
+            Sprite("characters", frameWidth, frameHeight, 3, row + 2, Constants.COMMON_ACTION_FPS, 0):setFlipX())
     end
 
-    local positionComp = PositionComp(tileX * Constants.TILE_SIZE, tileY * Constants.TILE_SIZE, Constants.PLAYER_SIZE,
-        Constants.PLAYER_SIZE):setCollisionRect(5 / 16 * Constants.PLAYER_SIZE, 3 / 16 * Constants.PLAYER_SIZE,
-        6 / 16 * Constants.PLAYER_SIZE, 13 / 16 * Constants.PLAYER_SIZE)
+    local displayXScale = (data.xScale or 1) * (data.sizeScale or 1)
+    local displayYScale = (data.yScale or 1) * (data.sizeScale or 1)
+    local positionComp = PositionComp(tileX * Constants.TILE_SIZE, tileY * Constants.TILE_SIZE,
+        Constants.PLAYER_SIZE * displayXScale,
+        Constants.PLAYER_SIZE * displayYScale):setCollisionRect(
+        5 / 16 * Constants.PLAYER_SIZE * displayXScale,
+        3 / 16 * Constants.PLAYER_SIZE * displayYScale,
+        6 / 16 * Constants.PLAYER_SIZE * displayXScale,
+        13 / 16 * Constants.PLAYER_SIZE * displayYScale)
     positionComp.speed = Constants.MOD_SPEED
     positionComp.jump_gravity = Constants.MOB_GRAVITY_JUMP
-    local getAttkStateCb = hasAttack and (function(parent, direction) return ActionState(parent, direction) end) or nil
-    local stateComp = StateComp(SimpleAiState(getAttkStateCb, attkRange))
+    local getAttkStateCb = data.attackAnim and (function(parent, direction) return ActionState(parent, direction) end) or
+        nil
+    local stateComp = StateComp(SimpleAiState(getAttkStateCb, data.attkRange, data.getTrackingCb))
     local obj = GameObject(anim, positionComp, stateComp, name)
     obj.infoComp:addInfo(CommonCharInfo())
     return obj
 end
 
 function GameObjectFactory.getZombie(tileX, tileY)
-    local obj = GameObjectFactory.getMobObj(tileX, tileY, 4, false, Constants.OBJ_NAME_ZOMBIE)
+    local obj = GameObjectFactory.getMobObj(tileX, tileY, 4, Constants.OBJ_NAME_ZOMBIE)
     obj.infoComp:addInfo(DmgInfo(1, 0, { Constants.OBJ_NAME_PLAYER }, false))
     return obj
 end
 
 function GameObjectFactory.getSkeleton(tileX, tileY)
-    local obj = GameObjectFactory.getMobObj(tileX, tileY, 6, true, Constants.OBJ_NAME_SKELETON, 200)
+    local obj = GameObjectFactory.getMobObj(tileX, tileY, 6, Constants.OBJ_NAME_SKELETON,
+        { attackAnim = "attack-range", attkRange = 200 })
     obj.inventoryComp = InventoryComp()
     obj.inventoryComp:addItem(InventoryItemFactory.getBow(), true)
+    return obj
+end
+
+function GameObjectFactory.getCreeper(tileX, tileY)
+    local obj = GameObjectFactory.getMobObj(tileX, tileY, 9, Constants.OBJ_NAME_CREEPER)
+    obj.inventoryComp = InventoryComp()
+    return obj
+end
+
+function GameObjectFactory.getEnderman(tileX, tileY)
+    local obj = GameObjectFactory.getMobObj(tileX, tileY, 7, Constants.OBJ_NAME_ENDERMAN,
+        {
+            attackAnim = "attack",
+            yScale = 2,
+            getTrackingCb = (function(parent, direction)
+                return FaceToFaceTeleportState(parent,
+                    direction)
+            end)
+        })
+    obj.infoComp:addInfo(DmgInfo(1, 0, { Constants.OBJ_NAME_PLAYER }, false))
+    obj.inventoryComp = InventoryComp()
+    obj.inventoryComp:addItem(InventoryItemFactory.getSword(2), true)
+    return obj
+end
+
+function GameObjectFactory.getEnderDragon(tileX, tileY)
+    local obj = GameObjectFactory.getMobObj(tileX, tileY, 20, Constants.OBJ_NAME_ENDER_DRAGON,
+        { xScale = 2, yScale = 1, sizeScale = 2 })
+    obj.infoComp:addInfo(DmgInfo(1, 0, { Constants.OBJ_NAME_PLAYER }, false))
+    obj.positionComp:setZeroGravity()
+    obj.inventoryComp = InventoryComp()
     return obj
 end
 
@@ -90,19 +144,21 @@ function GameObjectFactory.getTreeBlock(tileX, tileY)
     return GameObjectFactory.getSolidBlock(tileX, tileY, 2, 0, function(obj)
         obj.positionComp.isBlocked = false
         obj.infoComp:addInfo(CommonBlockInfo(false, true))
+        obj.name = Constants.OBJ_NAME_BLOCK_WOOD
     end)
 end
 
 function GameObjectFactory.getLeafBlock(tileX, tileY)
     return GameObjectFactory.getSolidBlock(tileX, tileY, 3, 0, function(obj)
         obj.infoComp:addInfo(CommonBlockInfo(false, true))
+        obj.name = Constants.OBJ_NAME_BLOCK_LEAF
     end)
 end
 
 function GameObjectFactory.getAppleBlock(tileX, tileY)
     return GameObjectFactory.getSolidBlock(tileX, tileY, 4, 0, function(obj)
         obj.infoComp:addInfo(CommonBlockInfo(false, true))
-        obj.name = Constants.OBJ_NAME_APPLE
+        obj.name = Constants.OBJ_NAME_BLOCK_APPLE
     end)
 end
 
@@ -118,7 +174,7 @@ function GameObjectFactory.getDmgObj(x, y, dmgInfo, dmgSize)
 end
 
 function GameObjectFactory.getArrow(x, y, directionVec, speed, dmgInfo)
-    local anim = AnimComp("idle", Sprite("general", 16, 16, 1, 2, 1, 0))
+    local anim = AnimComp("idle-right", Sprite("general", 16, 16, 1, 2, 1, 0))
     local positionComp = PositionComp(x - Constants.TILE_SIZE / 2, y - Constants.TILE_SIZE / 2, Constants.TILE_SIZE,
         Constants.TILE_SIZE):setCollisionRect(6 * 2, 6 * 2, 4 * 2,
         4 * 2)
@@ -129,15 +185,26 @@ function GameObjectFactory.getArrow(x, y, directionVec, speed, dmgInfo)
     return obj
 end
 
+function GameObjectFactory.getEyeOfEnderObj(x, y)
+    local anim = AnimComp("idle-right", Sprite("general", 16, 16, 1, 3, 1, 6))
+    local positionComp = PositionComp(x - Constants.TILE_SIZE / 2, y - Constants.TILE_SIZE / 2, Constants.TILE_SIZE,
+        Constants.TILE_SIZE):setCollisionRect(4 * 2, 4 * 2, 6 * 2,
+        6 * 2):setZeroGravity()
+    positionComp.isBlocked = false
+    local stateComp = StateComp(EnderEyeState())
+    local obj = GameObject(anim, positionComp, stateComp)
+    return obj
+end
+
 function GameObjectFactory.getLootObj(x, y, lootItem)
-    local randomX = math.random(-10, 10)
-    local anim = AnimComp("idle", Sprite("general", 16, 16, 1, 2, 1, 0))
-    local positionComp = PositionComp(x + randomX - Constants.TILE_SIZE / 2, y - Constants.TILE_SIZE / 2,
-        Constants.TILE_SIZE,
-        Constants.TILE_SIZE):setCollisionRect(6 * 2, 6 * 2, 4 * 2,
-        4 * 2)
+    local randomX = math.random(-5, 5)
+    local frame = Constants.ITEM_IMAGE_MAPPING[lootItem.name]
+    local anim = AnimComp("idle", Sprite("general", 16, 16, 1, frame[2], 1, frame[1]))
+    local positionComp = PositionComp(x + randomX - Constants.ITEM_OBJECT_SIZE / 2, y - Constants.ITEM_OBJECT_SIZE / 2,
+        Constants.ITEM_OBJECT_SIZE,
+        Constants.ITEM_OBJECT_SIZE)
     local obj = GameObject(anim, positionComp)
-    obj.infoComp:addInfo(LootInfo(lootItem or InventoryItemFactory.getBlockItem(Constants.BLOCK_ITEM_DIRT)))
+    obj.infoComp:addInfo(LootInfo(lootItem))
     return obj
 end
 

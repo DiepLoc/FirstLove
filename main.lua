@@ -28,6 +28,10 @@ function love.keypressed(key)
         MyLocator.camera:setScale(MyLocator.camera.scale / 2)
     end
 
+    if key == "space" and MyLocator.gameObjectManager:checkIsPlayerDestroyed() then
+        MyLocator.gameObjectManager:spawnPlayer()
+    end
+
     if key == "rshift" then
         local a = 1
     end

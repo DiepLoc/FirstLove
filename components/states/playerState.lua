@@ -6,7 +6,22 @@ function PlayerState:new()
     return self
 end
 
+---@param subject GameObject
+function PlayerState:checkItemInput(subject)
+    local keys = { 1, 2, 3, 4, 5, 6, 7, 8, 9 }
+    if love.keyboard.isDown("0") then
+        subject.inventoryComp.currentItemIndex = 10
+    else
+        for _, key in pairs(keys) do
+            if love.keyboard.isDown(tostring(key)) then
+                subject.inventoryComp.currentItemIndex = key
+            end
+        end
+    end
+end
+
 function PlayerState:update(subject, dt)
+    self:checkItemInput(subject)
     local positionComp = subject.positionComp
     local newVelo = Vector2(0, 0)
     -- if love.keyboard.isDown("s") then
@@ -48,7 +63,7 @@ function PlayerState:checkAction(subject, dt)
         self.remainingNextActionTime = self.remainingNextActionTime - dt
     end
     local currentItem = subject.inventoryComp:getCurrentItemOrNull()
-    if self.remainingNextActionTime > 0 or not self.subState:is(NullState) or not currentItem or not currentItem:checkHasLeftAction() then
+    if self.remainingNextActionTime > 0 or not self.subState:is(NullState) or not currentItem or not currentItem:getLeftActionAnim() then
         return
     end
 

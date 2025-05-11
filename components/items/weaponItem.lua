@@ -9,8 +9,15 @@ function WeaponItem:new(name, dmg, exploitDmg, weaponType, range)
     return self
 end
 
-function WeaponItem:checkHasLeftAction()
+function WeaponItem:getLeftActionAnim()
+    if self.weaponType == Constants.WEAPON_TYPE_RANGE then
+        return "attack-range"
+    end
     return "attack"
+end
+
+function WeaponItem:onStartAction(subject)
+
 end
 
 function WeaponItem:getTranformDirectionCb()
@@ -26,7 +33,12 @@ end
 -- data {targetPos = Vector2}
 function WeaponItem:onLeftAction(subject, data)
     local targetDmgNames = subject.name == Constants.OBJ_NAME_PLAYER and
-        { Constants.OBJ_NAME_ZOMBIE, Constants.OBJ_NAME_SKELETON } or { Constants.OBJ_NAME_PLAYER }
+        { Constants.OBJ_NAME_ZOMBIE,
+            Constants.OBJ_NAME_SKELETON,
+            Constants.OBJ_NAME_CREEPER,
+            Constants.OBJ_NAME_ENDERMAN,
+            Constants.OBJ_NAME_ENDER_DRAGON }
+        or { Constants.OBJ_NAME_PLAYER }
     local dmgInfo = DmgInfo(self.dmg, self.exploitDmg, targetDmgNames)
 
     local subjectCenter = subject.positionComp.displayRect:getCenter()
@@ -41,10 +53,13 @@ function WeaponItem:onLeftAction(subject, data)
 
     -- shoot arrow
     if self.weaponType == Constants.WEAPON_TYPE_RANGE then
-        local arrowObj = GameObjectFactory.getArrow(subjectCenter.x, subjectCenter.y, actionDirection, nil,
-            dmgInfo)
-        MyLocator.gameObjectManager:addGameObject(arrowObj)
-
+        local arrowItem = subject.inventoryComp:findItem(Constants.ITEM_ARROW)
+        if arrowItem and arrowItem.stack >= 1 then
+            local arrowObj = GameObjectFactory.getArrow(subjectCenter.x, subjectCenter.y, actionDirection, nil,
+                dmgInfo)
+            MyLocator.gameObjectManager:addGameObject(arrowObj)
+            arrowItem.stack = arrowItem.stack - 1
+        end
         -- swing melee tools
     else
         dmgInfo.dmgSource = subject

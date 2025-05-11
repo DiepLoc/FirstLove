@@ -13,6 +13,15 @@ function BaseInvItem:setStackable()
     return self
 end
 
+function BaseInvItem:setStack(stack)
+    self.stack = stack
+    return self
+end
+
+function BaseInvItem:onStartAction(subject)
+
+end
+
 function BaseInvItem:onConsume()
     self.stack = self.stack - 1
 end
@@ -22,8 +31,8 @@ function BaseInvItem:onSetup(image)
     return self
 end
 
-function BaseInvItem:checkHasLeftAction()
-    return false
+function BaseInvItem:getLeftActionAnim()
+    return nil
 end
 
 function BaseInvItem:onLeftAction(subject, data)

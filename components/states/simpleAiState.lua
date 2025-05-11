@@ -1,41 +1,61 @@
 SimpleAiState = BaseState:extend()
 
 
-function SimpleAiState:new(getAttackStateCb, attackRange)
+function SimpleAiState:new(getAttackStateCb, attackRange, getTrackingStateCb)
     self.getAttackStateCb = getAttackStateCb or nil
-    self.attackRange = attackRange or 33
+    self.attackRange = attackRange or 100
+    self.getTrackingStateCb = getTrackingStateCb or nil
+    self.trackingState = nil
 end
 
 ---@param subject GameObject
 function SimpleAiState:update(subject, dt)
+    subject.positionComp.velocity = Vector2(0, 0)
     local player = MyLocator.gameObjectManager.player
     if not player then return nil end
 
     local playerCenter = player.positionComp.displayRect:getCenter()
     local subjectCenter = subject.positionComp.displayRect:getCenter()
 
-    local velocity = Vector2(0, 0)
-    local distance, dx, dy = CommonHelper.getDistance(playerCenter.x, playerCenter.y, subjectCenter.x,
+    local distance, dxVal, dyVal = CommonHelper.getDistance(playerCenter.x, playerCenter.y, subjectCenter.x,
         subjectCenter.y)
     if distance < Constants.MOD_TRACKING_DISTANCE then
         local direction = CommonHelper.get2dDirectionFromDirection(playerCenter.x, playerCenter.y, subjectCenter.x,
             subjectCenter.y)
-        if direction.x > 0 and dx > 5 then
-            velocity.x = 1
-        elseif direction.x < 0 and dx > 5 then
-            velocity.x = -1
+        -- random attack
+        if dxVal < self.attackRange and CommonHelper.getRandomResultByTime(Constants.RAMDOM_MOB_ATTACK_TIME, dt) then
+            if self.getAttackStateCb then
+                return self.getAttackStateCb(self, playerCenter)
+            else
+                subject.positionComp:onJump()
+            end
         end
 
-        local isJump = (dx > 33 or dy > 70) and math.random() < 0.01
-        if isJump then
-            subject.positionComp:onJump()
-        end
+        -- tracking
+        if self.getTrackingStateCb then
+            if self.trackingState == nil then
+                self.trackingState = self.getTrackingStateCb(self, playerCenter)
+            end
+            self.trackingState:update(subject, dt)
+        else
+            -- -- basic following
+            -- if direction.x > 0 and dxVal > 5 then
+            --     velocity.x = 1
+            -- elseif direction.x < 0 and dxVal > 5 then
+            --     velocity.x = -1
+            -- end
+            -- subject.positionComp.velocity = velocity
 
-        if dx < self.attackRange and self.getAttackStateCb and CommonHelper.getRandomResultByTime(Constants.RAMDOM_MOB_ATTACK_TIME, dt) then
-            return self.getAttackStateCb(self, playerCenter)
+            -- -- random jump
+            -- local isJump = (dxVal > 33 or dyVal > 70) and math.random() < 0.01
+            -- if isJump then
+            --     subject.positionComp:onJump()
+            -- end
+
+            self:simpleTracking(subject, direction, dxVal, dyVal)
         end
     end
-    subject.positionComp.velocity = velocity
+
     self:updateSimpleAnim(subject)
 
     return nil

@@ -2,6 +2,7 @@ require "managers.imageManager"
 require "camera"
 require "managers.gameObjectManager"
 require "managers.uiManager"
+require "managers.soundManager"
 
 ---@class Locator
 Locator = Object:extend()
@@ -19,11 +20,19 @@ function Locator:new()
     self.gameObjectManager = GameObjectManager()
     ---@type UiManager
     self.uiManager = UiManager()
+    ---@type SoundManager
+    self.soundManager = SoundManager()
 
     self.managers = {
         self.imageManager,
         self.gameObjectManager,
         self.uiManager,
+        self.soundManager,
+    }
+
+    self.observers = {
+        self.soundManager,
+        self.gameObjectManager,
     }
     return self
 end
@@ -38,22 +47,41 @@ end
 ---@param data any
 function Locator:notify(event, data)
     print("event-" .. event)
-    if event == Constants.EVENT_GAMEOBJ_DESTROYED then
-        local obj = data
-        local center = obj.positionComp:getCollisionCenter()
-        if obj.name == Constants.OBJ_NAME_BLOCK then
-            local loot = GameObjectFactory.getLootObj(center.x, center.y)
-            self.gameObjectManager:addGameObject(loot)
-        elseif obj.name == Constants.OBJ_NAME_APPLE then
-            local loot = GameObjectFactory.getLootObj(center.x, center.y, InventoryItemFactory.getAppleItem())
-            self.gameObjectManager:addGameObject(loot)
-        end
+
+    -- notify to observers
+    for _, observer in pairs(self.observers) do
+        observer:onNotify(event, data)
     end
 
+    self:handleLoot(event, data)
     if event == Constants.EVENT_DROP_ITEM then
         local item = data.item
         local loot = GameObjectFactory.getLootObj(data.x, data.y, item)
         self.gameObjectManager:addGameObject(loot)
+    end
+end
+
+local lootMapping = {
+    [Constants.OBJ_NAME_SKELETON] = function() return InventoryItemFactory.getArrow() end,
+    [Constants.OBJ_NAME_BLOCK_APPLE] = function() return InventoryItemFactory.getAppleItem() end,
+    [Constants.OBJ_NAME_BLOCK] = function() return InventoryItemFactory.getBlockItem(Constants.OBJ_NAME_BLOCK) end,
+    [Constants.OBJ_NAME_ZOMBIE] = function() return InventoryItemFactory.getMeatItem end,
+    [Constants.OBJ_NAME_ENDERMAN] = function() return InventoryItemFactory.getEyeOfEnderItem() end,
+}
+
+function Locator:handleLoot(event, data)
+    if event == Constants.EVENT_GAMEOBJ_DESTROYED then
+        local obj = data
+        local center = obj.positionComp:getCollisionCenter()
+        local cb = lootMapping[obj.name]
+        if cb then
+            local loot = GameObjectFactory.getLootObj(center.x, center.y, cb())
+            self.gameObjectManager:addGameObject(loot)
+            return
+        elseif string.find(obj.name, "BLOCK") then
+            local loot = GameObjectFactory.getLootObj(center.x, center.y, InventoryItemFactory.getBlockItem(obj.name))
+            self.gameObjectManager:addGameObject(loot)
+        end
     end
 end
 

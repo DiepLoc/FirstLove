@@ -27,7 +27,7 @@ end
 function DmgInfo:handleCollision(subject, otherObj, dt)
     if self:checkIsTarget(otherObj.name) then
         local otherCharInfo = otherObj.infoComp:getInfo(CommonCharInfo)
-        if otherCharInfo then
+        if otherCharInfo and not otherCharInfo:isInvincible() then
             otherCharInfo:onDamaged(otherObj, self.damage)
             local dmgInertia = self:getDmgDirection(subject, otherObj):normalize() * Constants.DMG_INERTIA
             otherObj.positionComp:addInertia(dmgInertia.x, dmgInertia.y)

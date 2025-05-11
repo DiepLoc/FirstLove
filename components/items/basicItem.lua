@@ -5,10 +5,6 @@ function BasicItem:new(name)
     return self
 end
 
-function BasicItem:checkHasLeftAction()
-    return false
-end
-
 function BasicItem:onLeftAction(subject, data)
 end
 

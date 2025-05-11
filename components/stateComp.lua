@@ -6,6 +6,10 @@ function StateComp:new(baseState)
     return self
 end
 
+function StateComp:setState(state)
+    self.currentState = state
+end
+
 function StateComp:update(subject, dt)
     if self.currentState then
         local newState = self.currentState:update(subject, dt)

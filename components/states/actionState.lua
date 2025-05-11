@@ -18,6 +18,7 @@ function ActionState:update(subject, dt)
     end
 
     if self.faceDirection == nil then
+        subject.inventoryComp:getCurrentItemOrNull():onStartAction(subject)
         local targetPos = self:getTargetPosition()
         local worldPlayerCenter = subject.positionComp.displayRect:getCenter()
         local faceVector = CommonHelper.get2dDirectionFromDirection(targetPos.x, targetPos.y, worldPlayerCenter.x,
@@ -29,7 +30,7 @@ function ActionState:update(subject, dt)
 
     if self.animName == nil then
         local currentItem = subject.inventoryComp:getCurrentItemOrNull()
-        self.animName = currentItem:checkHasLeftAction()
+        self.animName = currentItem:getLeftActionAnim()
     end
 
 

@@ -7,7 +7,12 @@ function CommonCharInfo:new(health)
     self.maxHunger = self.hunger
     self.isHungryable = false
     self.remainingHungerDmgTime = 0
+    self.remainingInvincibleTime = 0
     return self
+end
+
+function CommonCharInfo:isInvincible()
+    return self.remainingInvincibleTime > 0
 end
 
 function CommonCharInfo:setHungryable()
@@ -15,11 +20,18 @@ function CommonCharInfo:setHungryable()
     return self
 end
 
+---@param subject GameObject
+---@param dt any
 function CommonCharInfo:update(subject, dt)
     -- Update logic for the base info
     -- This method should be overridden in derived classes
-    if self.health <= 0 then
-        subject.isDestroyed = true
+    if self.health <= 0 and not subject.stateComp.currentState:is(DyingState) then
+        subject.stateComp:setState(DyingState())
+        MyLocator:notify(Constants.EVENT_GAMEOBJ_DESTROYED, subject)
+    end
+
+    if self.remainingInvincibleTime > 0 then
+        self.remainingInvincibleTime = self.remainingInvincibleTime - dt
     end
 
     if not self.isHungryable then return end
@@ -31,9 +43,13 @@ function CommonCharInfo:update(subject, dt)
     if self.hunger <= 0 then
         self.remainingHungerDmgTime = self.remainingHungerDmgTime - dt
         if self.remainingHungerDmgTime <= 0 then
-            self:onDamaged(subject, 1)
+            if self.health > 1 then self:onDamaged(subject, 1) end
             self.remainingHungerDmgTime = Constants.HUNGER_DMG_DELAY_TIME
         end
+    end
+
+    if self.hunger > 9 then
+        self.health = math.min(self.health + 0.1 * dt, self.maxHealth)
     end
 end
 
@@ -48,6 +64,8 @@ end
 function CommonCharInfo:onDamaged(subject, dmgVal)
     self.health = self.health - dmgVal
     subject.animComp.color = Constants.OBJ_DAMAGED_COLOR
+    self.remainingInvincibleTime = Constants.INVINCIBLE_TIME
+    MyLocator:notify(Constants.EVENT_DAMAGED_OBJECT, subject)
 end
 
 ---@param subject GameObject

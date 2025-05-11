@@ -20,6 +20,20 @@ function GameObject:new(animComp, positionComp, stateComp, name)
   return self
 end
 
+function GameObject:onTeleport(tileX, tileY)
+  local collisionRect = self.positionComp:getWorldCollisionRect()
+  local newCollisionRect = Rectangle(tileX * Constants.TILE_SIZE, tileY * Constants.TILE_SIZE, collisionRect.width,
+    collisionRect.height)
+  local isValidPos = MyLocator.gameObjectManager:checkNonblockingRect(newCollisionRect)
+  if isValidPos then
+    local dXY = newCollisionRect:getCenter() - collisionRect:getCenter()
+    self.positionComp.displayRect:move(dXY.x, dXY.y)
+    return true
+  end
+
+  return false
+end
+
 function GameObject:update(dt)
   self.animComp:update(self, dt)
   if not self.animComp.isInsideScreen then return end
@@ -36,6 +50,10 @@ function GameObject:update(dt)
   end
 
   self.positionComp:update(self, dt)
+end
+
+function GameObject:checkIsDying()
+  return self.stateComp and self.stateComp.currentState:is(DyingState)
 end
 
 function GameObject:handleCollision(otherObj, dt)

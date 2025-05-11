@@ -5,8 +5,12 @@ function BlockItem:new(name, generateBlockCb)
     self.generateBlockCb = generateBlockCb
 end
 
-function BlockItem:checkHasLeftAction()
+function BlockItem:getLeftActionAnim()
     return "attack"
+end
+
+function BlockItem:onStartAction(subject)
+
 end
 
 function BlockItem:onLeftAction(subject, data)

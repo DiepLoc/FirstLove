@@ -10,8 +10,16 @@ function UiManager:showInventory(player)
     local items = player.inventoryComp.items
     local selectedInd = player.inventoryComp.currentItemIndex
     local anchor = Vector2(350, 720)
-    local backgroundRect = Rectangle(3 * 16, 2 * 16, 16, 16)
+    local sourceBorderRect = Rectangle(3 * 16, 2 * 16, 16, 16)
     local displaySize = 48
+
+    -- inventory background
+    for i = 1, player.inventoryComp.maxSlots do
+        local base0Ind = i - 1
+        DrawHelper.drawRect(anchor.x + base0Ind * displaySize, anchor.y, displaySize, displaySize,
+            { 0, 0, 0, 0.25 },
+            true)
+    end
 
     -- inventory items
     for ind, item in pairs(items) do
@@ -27,23 +35,25 @@ function UiManager:showInventory(player)
         end
     end
 
-    -- inventory background
+    -- inventory border
     for i = 1, player.inventoryComp.maxSlots do
         local base0Ind = i - 1
         local color = i ~= selectedInd and { 1, 1, 1, 1 } or { 0, 0, 1, 1 }
         local targetRect = Rectangle(anchor.x + base0Ind * displaySize, anchor.y, displaySize, displaySize)
-        DrawHelper.drawImage("general", backgroundRect, targetRect, color, false, false, true)
+        DrawHelper.drawImage("general", sourceBorderRect, targetRect, color, false, false, true)
     end
 end
 
 function UiManager:showPlayerHealth(player)
     local playerHealth = player.infoComp:getInfo(CommonCharInfo).health
+    local ceilHealth = math.ceil(playerHealth)
     local anchor = Vector2(350, 690)
     local soruceRect = Rectangle(16, 16 * 2, 16, 16)
-    for i = 1, playerHealth do
+    for i = 1, ceilHealth do
+        local opacity = i ~= ceilHealth and 1 or (1 - ceilHealth + playerHealth)
         local base0Ind = i - 1
         local targetRect = Rectangle(anchor.x + base0Ind * 24, anchor.y, 24, 24)
-        DrawHelper.drawImage("general", soruceRect, targetRect, { 1, 1, 1, 1 }, false, false, true)
+        DrawHelper.drawImage("general", soruceRect, targetRect, { 1, 1, 1, opacity }, false, false, true)
     end
 end
 
@@ -58,6 +68,10 @@ function UiManager:showPlayerHunger(player)
         local targetRect = Rectangle(anchor.x - 24 - base0Ind * 24, anchor.y, 24, 24)
         DrawHelper.drawImage("general", soruceRect, targetRect, { 1, 1, 1, opacity }, false, false, true)
     end
+end
+
+function UiManager:showCraftingMenu()
+
 end
 
 function UiManager:draw()

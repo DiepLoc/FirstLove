@@ -53,12 +53,24 @@ function GameObjectManager:addBlock(block, x, y, shouldOverwrite, addMidAir)
     end
 end
 
-function GameObjectManager:onSetup()
+function GameObjectManager:spawnPlayer()
     ---@type GameObject
     self.player = Factory.getPlayer(1, 0)
     table.insert(self.gameObjects, self.player)
+    MyLocator:notify(Constants.EVENT_PlAYER_SPAWN)
+end
+
+function GameObjectManager:onSetup()
+    self:spawnPlayer()
     -- table.insert(self.gameObjects, Factory.getZombie(10, 10))
-    table.insert(self.gameObjects, Factory.getSkeleton(20, 10))
+    -- table.insert(self.gameObjects, Factory.getSkeleton(10, 0))
+    -- table.insert(self.gameObjects, Factory.getZombie(20, 0))
+    -- table.insert(self.gameObjects, Factory.getCreeper(30, 0))
+    table.insert(self.gameObjects, Factory.getEnderman(40, 0))
+    -- table.insert(self.gameObjects, Factory.getSkeleton(50, 0))
+
+    self.enderDragonSpawnPosition = Vector2(math.random(50, 300 - 50), -20 * Constants.TILE_SIZE)
+    table.insert(self.gameObjects, Factory.getEnderDragon(self.enderDragonSpawnPosition.x / Constants.TILE_SIZE, 0))
 
     self.blocks = GameObjectFactory.generateTerrain(Constants.MAP_WIDTH, Constants.MAP_HEIGHT,
         Constants.MAP_GENERATE_SCALE, Constants.MAP_GENERATE_OFFSET, Constants.MAP_WATER_HEIGHT)
@@ -74,6 +86,12 @@ function GameObjectManager:getObjByName(objName)
     return objs
 end
 
+function GameObjectManager:onNotify(event, data)
+    if event == Constants.EVENT_GAMEOBJ_DESTROYED and data.name == Constants.OBJ_NAME_PLAYER then
+
+    end
+end
+
 function GameObjectManager:getObjByCondition(func)
     local objs = {}
     for _, gameObject in pairs(self.gameObjects) do
@@ -82,6 +100,31 @@ function GameObjectManager:getObjByCondition(func)
         end
     end
     return objs
+end
+
+---@param collisionRect Rectangle
+function GameObjectManager:checkNonblockingRect(collisionRect)
+    for key, obj in pairs(self.gameObjects) do
+        if obj.positionComp.isBlocked and obj.positionComp:getWorldCollisionRect():collidesWith(collisionRect) then
+            return false
+        end
+    end
+
+    local tileRect = CommonHelper.getTileRect(collisionRect)
+
+    for x = tileRect.x - 1, tileRect.right + 2 do
+        for y = tileRect.y - 1, tileRect.bottom + 2 do
+            if self.blocks[x] and self.blocks[x][y] then
+                local block = self.blocks[x][y]
+                if block.positionComp.isBlocked then
+                    if block.positionComp:getWorldCollisionRect():collidesWith(collisionRect) then
+                        return false
+                    end
+                end
+            end
+        end
+    end
+    return true
 end
 
 ---@param obj GameObject
@@ -115,7 +158,7 @@ function GameObjectManager:checkAndHandleCollision(obj, dx, dy)
 
     -- check with other objects
     for _, other in pairs(self.gameObjects) do
-        if other ~= obj and not other.isDestroyed then
+        if other ~= obj and not other.isDestroyed and not other:checkIsDying() then
             local otherBounds = other.positionComp:getWorldCollisionRect()
 
             if collisionRect2:collidesWith(otherBounds) then
@@ -134,7 +177,11 @@ function GameObjectManager:checkAndHandleCollision(obj, dx, dy)
 end
 
 -- return newDx, newDy, isGrounded
+---@param obj GameObject
+---@param dx any
+---@param dy any
 function GameObjectManager:handleMoving(obj, dx, dy)
+    if obj:checkIsDying() then return 0, 0, true end
     if dx == 0 and dy == 0 then
         return 0, 0, true
     end
@@ -203,6 +250,17 @@ function GameObjectManager:update(dt)
     AddDebugStr("GameObj: " .. #self.gameObjects .. " blocks:" .. #self.blocks)
 end
 
+function GameObjectManager:checkIsPlayerDestroyed()
+    return not self.player or self.player.isDestroyed
+end
+
+function GameObjectManager:drawPlayerRespawnMessage()
+    if self:checkIsPlayerDestroyed() then
+        DrawHelper.drawText("You Died! Hit 'space' to Respawn", Constants.WINDOW_WIDTH / 2 - 300,
+            Constants.WINDOW_HEIGHT / 2 - 50, 3)
+    end
+end
+
 function GameObjectManager:draw()
     DrawHelper.clearSpritebatch()
     for i = #self.gameObjects, 1, -1 do
@@ -212,6 +270,7 @@ function GameObjectManager:draw()
         block:draw()
     end)
     DrawHelper.drawSpriteBatch()
+    self:drawPlayerRespawnMessage()
 end
 
 return GameObjectManager

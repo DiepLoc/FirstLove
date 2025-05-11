@@ -7,6 +7,7 @@ Constants = {
     MOD_SPEED = 100,
     GROUND_Y = 400,
     TILE_SIZE = 32,
+    ITEM_OBJECT_SIZE = 16,
     ACTION_DISTANCE = 32,
     EXPLOIT_SIZE = 10,
     MELEE_ATTACK_SIZE = 50,
@@ -15,6 +16,7 @@ Constants = {
     WINDOW_WIDTH = 1200,
     WINDOW_HEIGHT = 800,
     WATER_SPEED_RATE = 0.5,
+    INVINCIBLE_TIME = 0.5,
     COMMON_ACTION_FPS = 8,
     PLAYER_ACTION_DELAY = 0.6,
     APPLE_SPAWN_RATE = 0.05,
@@ -24,17 +26,26 @@ Constants = {
     HUNGER_SPEED = 1 / 60, -- 1 per min
     BLOCK_DAMAGED_COLOR = { 0.3, 0.3, 0.3, 1 },
     OBJ_DAMAGED_COLOR = { 1, 0, 0, 1 },
+    ENDERMAN_TELEPORT_MAX_Y = 100,
+    ENDERMAN_TELEPORT_MIN_X = 150,
+    ENDER_EYE_FLY_RANGE = { 32 * 6, 8 * 32 },
+    ENDER_EYE_SPEED = 200,
+
 
     -- game object names
     OBJ_NAME_PLAYER = "PLAYER",
     OBJ_NAME_ZOMBIE = "ZOMBIE",
     OBJ_NAME_SKELETON = "SKELETON",
     OBJ_NAME_CREEPER = "CREEPER",
+    OBJ_NAME_ENDERMAN = "ENDERMAN",
+    OBJ_NAME_ENDER_DRAGON = "ENDER_DRAGON",
     OBJ_NAME_OBJECT = "GameObject",
     OBJ_NAME_WATER = "WATER",
     OBJ_NAME_DMG = "DMG",
     OBJ_NAME_BLOCK = "BLOCK",
-    OBJ_NAME_APPLE = "APPLE",
+    OBJ_NAME_BLOCK_APPLE = "BLOCK_APPLE",
+    OBJ_NAME_BLOCK_LEAF = "BLOCK_LEAF",
+    OBJ_NAME_BLOCK_WOOD = "BLOCK_WOOD",
 
     -- terrain
     MAP_WIDTH = 500,
@@ -49,6 +60,9 @@ Constants = {
     ITEM_BOW = "ITEM_BOW",
     ITEM_ARROW = "ITEM_ARROW",
     ITEM_APPLE = "ITEM_APPLE",
+    ITEM_WOOD = "ITEM_WOOD",
+    ITEM_MEAT = "ITEM_MEAT",
+    ITEM_EYE_OF_ENDER = "ITEM_EYE_OF_ENDER",
     ITEM_BLOCK_DIRT = "ITEM_BLOCK_DIRT",
     ITEM_BLOCK_LEAF = "ITEM_BLOCK_LEAF",
     ITEM_BLOCK_IRON = "ITEM_BLOCK_IRON",
@@ -67,6 +81,9 @@ Constants = {
     -- game events
     EVENT_GAMEOBJ_DESTROYED = "EVENT_GAMEOBJ_DESTROYED",
     EVENT_DROP_ITEM = "EVENT_DROP_ITEM",
+    EVENT_EATING = "EVENT_EATING",
+    EVENT_DAMAGED_OBJECT = "EVENT_DAMAGED_OBJECT",
+    EVENT_PlAYER_SPAWN = "EVENT_PlAYER_SPAWN",
 
     -- item image mapping
     ITEM_IMAGE_MAPPING = {
@@ -75,6 +92,9 @@ Constants = {
         ITEM_BOW = { 1, 3 },
         ITEM_ARROW = { 0, 3 },
         ITEM_APPLE = { 4, 3 },
+        ITEM_WOOD = { 2, 0 },
+        ITEM_MEAT = { 5, 3 },
+        ITEM_EYE_OF_ENDER = { 6, 3 },
         ITEM_BLOCK_DIRT = { 1, 0 },
         ITEM_BLOCK_LEAF = { 3, 0 },
         ITEM_BLOCK_IRON = { 7, 0 },
