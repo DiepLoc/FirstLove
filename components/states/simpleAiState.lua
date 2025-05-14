@@ -6,6 +6,7 @@ function SimpleAiState:new(getAttackStateCb, attackRange, getTrackingStateCb)
     self.attackRange = attackRange or 100
     self.getTrackingStateCb = getTrackingStateCb or nil
     self.trackingState = nil
+    return self
 end
 
 ---@param subject GameObject
@@ -40,6 +41,8 @@ function SimpleAiState:update(subject, dt)
         else
             self:simpleTracking(subject, direction, dxVal, dyVal)
         end
+    else
+        self:randomMoving(subject, dt)
     end
 
     self:updateSimpleAnim(subject)

@@ -33,13 +33,13 @@ function EnemySpawnManager:update(dt)
     local windowRect = MyLocator.camera:getBaseWindowRect()
     local rectTile = CommonHelper.getTileRect(windowRect)
 
-    local enderDragon = MyLocator.gameObjectManager:getObjByName(Constants.OBJ_NAME_ENDER_DRAGON)
+    local enderDragons = MyLocator.gameObjectManager:getObjsByName(Constants.OBJ_NAME_ENDER_DRAGON)
 
 
     local camCenter = MyLocator.camera:getRect():getCenter()
 
     for _, obj in pairs(existingObjs) do
-        if not obj.stateComp.currentState:is(DyingState) and math.abs(obj.positionComp:getCollisionCenter().x - camCenter.x) > 1400 then
+        if not obj.stateComp.currentState:is(DyingState) and math.abs(obj.positionComp:getCollisionCenter().x - camCenter.x) > 1200 then
             obj.stateComp:setState(DyingState(3))
         end
     end
@@ -53,7 +53,7 @@ function EnemySpawnManager:update(dt)
     local startY = isReverse and rectTile.y - 10 or rectTile.bottom + 10
     local endY = isReverse and rectTile.bottom + 10 or rectTile.y - 10
     local dy = isReverse and 3 or -3
-    local spawnReductionByDragonFactor = (enderDragon and 4 or 1)
+    local spawnReductionByDragonFactor = (#enderDragons > 0 and 4 or 1)
 
 
     if #existingObjs < 5 and CommonHelper.getRandomResultByTime((#existingObjs + 1) * 0.75 * spawnReductionByDragonFactor, dt + self.checkDelayTime) then

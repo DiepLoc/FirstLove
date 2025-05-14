@@ -7,7 +7,7 @@ Constants = {
     MOD_SPEED = 100,
     GROUND_Y = 400,
     TILE_SIZE = 32,
-    ITEM_OBJECT_SIZE = 16,
+    ITEM_OBJECT_SIZE = 24,
     ACTION_DISTANCE = 32,
     EXPLOIT_SIZE = 10,
     MELEE_ATTACK_SIZE = 50,
@@ -24,7 +24,7 @@ Constants = {
     DMG_INERTIA = 100,
     HUNGER_DMG_DELAY_TIME = 1,
     HEAL_WHEN_FULL = 0.05,
-    HUNGER_SPEED = 2 / 60, -- 1 per min
+    HUNGER_SPEED = 1.5 / 60, -- 1.5 per min
     BLOCK_DAMAGED_COLOR = { 0.3, 0.3, 0.3, 1 },
     OBJ_DAMAGED_COLOR = { 1, 0, 0, 1 },
     ENDERMAN_TELEPORT_MAX_Y = 100,
@@ -35,6 +35,7 @@ Constants = {
     ENDER_EYE_BREAK_RATE = 0.5,
     ENDER_DRAGON_TRACKING_RANGE = 1500,
     DISPLAY_DEBUG_INFO = false,
+    SHOW_WINNING_TIME = 10,
 
 
     -- game object names

@@ -190,7 +190,7 @@ end
 function GameObjectFactory.getExplosionObj(x, y, data)
     data = data or {}
     local size = data.size or Constants.TILE_SIZE
-    local anim = AnimComp("idle-right", Sprite("general", 16, 16, 1, 0, 1, 3))
+    local anim = AnimComp("idle-right", Sprite("general", 16, 16, 1, 1, 1, 9))
         :addAnim("dying", Sprite("characters", 16, 16, 5, 12, 5, 0))
     local positionComp = PositionComp(x - size / 2, y - size / 2, size,
         size):setZeroGravity()
@@ -250,7 +250,7 @@ function GameObjectFactory.getEyeOfEnderObj(x, y)
 end
 
 function GameObjectFactory.getLootObj(x, y, lootItem)
-    local randomX = math.random(-5, 5)
+    local randomX = math.random(-3, 3)
     local frame = Constants.ITEM_IMAGE_MAPPING[lootItem.name]
     local anim = AnimComp("idle", Sprite("general", 16, 16, 1, frame[2], 1, frame[1]))
     local positionComp = PositionComp(x + randomX - Constants.ITEM_OBJECT_SIZE / 2, y - Constants.ITEM_OBJECT_SIZE / 2,

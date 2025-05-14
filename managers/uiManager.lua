@@ -56,7 +56,7 @@ function UiManager:showPlayerHealth(player)
         local opacity = i ~= ceilHealth and 1 or (1 - ceilHealth + playerHealth)
         local base0Ind = i - 1
         local targetRect = Rectangle(anchor.x + base0Ind * 24, anchor.y, 24, 24)
-        DrawHelper.drawImage("general", sourceRect, targetRect, { 1, 1, 1, opacity }, false, false, true)
+        DrawHelper.drawImage("general", sourceRect, targetRect, { 1, 1, 1, math.max(0.2, opacity) }, false, false, true)
     end
 
     if isHealing and playerHealth < maxHealth then
@@ -79,7 +79,7 @@ function UiManager:showPlayerHunger(player)
         local opacity = i ~= ceilHunger and 1 or (1 - ceilHunger + playerHunger)
         local base0Ind = i - 1
         local targetRect = Rectangle(anchor.x - 24 - base0Ind * 24, anchor.y, 24, 24)
-        DrawHelper.drawImage("general", soruceRect, targetRect, { 1, 1, 1, opacity }, false, false, true)
+        DrawHelper.drawImage("general", soruceRect, targetRect, { 1, 1, 1, math.max(0.2, opacity) }, false, false, true)
     end
 end
 

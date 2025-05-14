@@ -7,6 +7,7 @@ function GameObjectManager:new()
     self.gameObjects = {}
     self.blocks = nil
     self.wonShowTime = 0
+    self.winTimestamp = nil
     return self
 end
 
@@ -87,10 +88,10 @@ function GameObjectManager:onSpawnEndCystal()
     table.insert(self.gameObjects, endCrystal)
 end
 
-function GameObjectManager:getObjByName(objName)
+function GameObjectManager:getObjsByName(objName)
     local objs = {}
     for _, gameObject in pairs(self.gameObjects) do
-        if gameObject.name == objName then
+        if gameObject.name == objName and not gameObject.isDestroyed then
             table.insert(objs, gameObject)
         end
     end
@@ -108,7 +109,11 @@ function GameObjectManager:onNotify(event, data)
 
     -- respawn crystal and show winning message
     if event == Constants.EVENT_GAMEOBJ_DESTROYED and data.name == Constants.OBJ_NAME_ENDER_DRAGON then
-        self.wonShowTime = 5
+        if self.winTimestamp == nil then
+            self.winTimestamp = GameTimer.h .. "h " .. GameTimer.m .. "m " .. math.floor(GameTimer.s) .. "s"
+            self.wonShowTime = Constants.SHOW_WINNING_TIME
+        end
+
         self:onSpawnEndCystal()
     end
 
@@ -308,10 +313,12 @@ end
 
 function GameObjectManager:drawWinningMessage()
     if self.wonShowTime > 0 then
-        DrawHelper.drawText("VICTORY!", Constants.WINDOW_WIDTH / 2 - 100,
+        DrawHelper.drawText("VICTORY!", Constants.WINDOW_WIDTH / 2 - 150,
             Constants.WINDOW_HEIGHT / 2 - 100, 4, { 1, 85 / 255, 0, 1 })
-        DrawHelper.drawText("Thanks for playing", Constants.WINDOW_WIDTH / 2 - 100,
+        DrawHelper.drawText("Thanks for playing", Constants.WINDOW_WIDTH / 2 - 150,
             Constants.WINDOW_HEIGHT / 2 - 50, 4, { 1, 85 / 255, 0, 1 })
+        DrawHelper.drawText("Time: " .. self.winTimestamp, Constants.WINDOW_WIDTH / 2 - 150,
+            Constants.WINDOW_HEIGHT / 2 - 0, 2, { 1, 85 / 255, 0, 1 })
     end
 end
 

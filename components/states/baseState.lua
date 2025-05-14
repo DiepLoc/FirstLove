@@ -1,6 +1,12 @@
 ---@class BaseState
 BaseState = Object:extend()
 
+function BaseState:new()
+    self.remainingChangeRandomDirection = 0
+    self.randomMovingDirection = Vector2(1, 0)
+    return self
+end
+
 function BaseState:update(subject, dt)
     -- Update logic for the base state
     -- This method should be overridden in derived classes
@@ -31,6 +37,18 @@ function BaseState:simpleTracking(subject, direction, dxVal, dyVal)
     if isJump then
         subject.positionComp:onJump()
     end
+end
+
+function BaseState:randomMoving(subject, dt)
+    if not self.remainingChangeRandomDirection then
+        self.remainingChangeRandomDirection = 0
+    end
+    self.remainingChangeRandomDirection = self.remainingChangeRandomDirection - dt
+    if self.remainingChangeRandomDirection <= 0 then
+        self.randomMovingDirection = math.random() < 0.5 and Vector2(1, 0) or Vector2(-1, 0)
+        self.remainingChangeRandomDirection = math.random(2, 5)
+    end
+    self:simpleTracking(subject, self.randomMovingDirection, 50, 0)
 end
 
 function BaseState:updateSimpleAnim(subject)
