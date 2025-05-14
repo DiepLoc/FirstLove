@@ -10,13 +10,14 @@ end
 ---@param otherObj GameObject
 function CommonBlockInfo:handleCollision(subject, otherObj, dt)
     if self.isWater then
-        otherObj.positionComp.speedRate = Constants.WATER_SPEED_RATE
+        otherObj.positionComp:onInWaterHandle(dt)
     end
 
     if self.isExploitable and otherObj.infoComp:checkHasInfo(DmgInfo) then
         local dmgInfo = otherObj.infoComp:getInfo(DmgInfo)
         if dmgInfo and dmgInfo.exploitDmg > 0 then
             self.hardness = self.hardness - dmgInfo.exploitDmg
+            MyLocator:notify(Constants.EVENT_DAMAGED_BLOCK, subject)
             subject.animComp.color = Constants.BLOCK_DAMAGED_COLOR
             if self.hardness <= 0 then
                 subject.isDestroyed = true

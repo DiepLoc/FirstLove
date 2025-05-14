@@ -28,6 +28,7 @@ function GameObject:onTeleport(tileX, tileY)
   if isValidPos then
     local dXY = newCollisionRect:getCenter() - collisionRect:getCenter()
     self.positionComp.displayRect:move(dXY.x, dXY.y)
+    MyLocator:notify(Constants.EVENT_TELEPORT, self)
     return true
   end
 
@@ -67,6 +68,7 @@ end
 function GameObject:draw()
   if not self.animComp.isInsideScreen then return end
 
+  self.positionComp:draw()
   self.animComp:draw(self.positionComp)
   if self.infoComp then
     self.infoComp:draw()
@@ -75,7 +77,6 @@ function GameObject:draw()
   if self.inventoryComp then
     self.inventoryComp:draw(self)
   end
-  -- self.positionComp:draw()
   -- self.stateComp:draw()
 end
 

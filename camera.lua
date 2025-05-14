@@ -47,9 +47,18 @@ function Camera:setCenterPosition(x, y)
 end
 
 function Camera:setScale(scale)
+    local center = self:getRect():getCenter()
     self.scale = scale
+    self:setCenterPosition(center.x, center.y)
 end
 
+---@return Rectangle
+function Camera:getBaseWindowRect()
+    local center = self:getRect():getCenter()
+    return Rectangle(center.x - self.width / 2, center.y - self.height / 2, self.width, self.height)
+end
+
+---@return Rectangle
 function Camera:getRect()
     return Rectangle(self.x, self.y, self.width / self.scale, self.height / self.scale)
 end

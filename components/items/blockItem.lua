@@ -24,6 +24,7 @@ function BlockItem:onLeftAction(subject, data)
     local block = self.generateBlockCb(tilePos.x, tilePos.y)
 
     if MyLocator.gameObjectManager:addBlock(block, tilePos.x, tilePos.y) then
+        MyLocator:notify(Constants.EVENT_PLACE_BLOCK, subject)
         self:onConsume()
     end
 end

@@ -38,20 +38,6 @@ function SimpleAiState:update(subject, dt)
             end
             self.trackingState:update(subject, dt)
         else
-            -- -- basic following
-            -- if direction.x > 0 and dxVal > 5 then
-            --     velocity.x = 1
-            -- elseif direction.x < 0 and dxVal > 5 then
-            --     velocity.x = -1
-            -- end
-            -- subject.positionComp.velocity = velocity
-
-            -- -- random jump
-            -- local isJump = (dxVal > 33 or dyVal > 70) and math.random() < 0.01
-            -- if isJump then
-            --     subject.positionComp:onJump()
-            -- end
-
             self:simpleTracking(subject, direction, dxVal, dyVal)
         end
     end

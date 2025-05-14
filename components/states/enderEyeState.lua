@@ -3,6 +3,7 @@ EnderEyeState = BaseState:extend()
 function EnderEyeState:new()
     self.dXY = nil
     self.speed = Constants.ENDER_EYE_SPEED
+    self.willReach = false
     return self
 end
 
@@ -20,6 +21,7 @@ function EnderEyeState:update(subject, dt)
         flyX = math.max(flyX, -Constants.ENDER_EYE_FLY_RANGE[1])
         local flyY = -Constants.ENDER_EYE_FLY_RANGE[2]
         self.dXY = Vector2(flyX, flyY)
+        self.willReach = Constants.ENDER_EYE_FLY_RANGE[1] > math.abs(dx)
     end
 
     if self.dXY.x > 0 then
@@ -55,7 +57,7 @@ function EnderEyeState:update(subject, dt)
     end
 
     if self.dXY and self.dXY:length() == 0 then
-        self:onComplete(subject)
+        return self:onComplete(subject)
     end
 
 
@@ -66,10 +68,20 @@ end
 ---@param subject GameObject
 function EnderEyeState:onComplete(subject)
     local center = subject.positionComp:getCollisionCenter()
-    local dropItem = Factory.getLootObj(center.x, center.y,
-        InventoryItemFactory.getEyeOfEnderItem())
-    MyLocator.gameObjectManager:addGameObject(dropItem)
-    subject.isDestroyed = true
+    local isBreak = not self.willReach and math.random() < Constants.ENDER_EYE_BREAK_RATE
+    if isBreak then
+        MyLocator:notify(Constants.EVENT_EYE_BREAK)
+        return DyingState()
+    else
+        local dropItem = Factory.getLootObj(center.x, center.y,
+            InventoryItemFactory.getEyeOfEnderItem())
+        MyLocator.gameObjectManager:addGameObject(dropItem)
+        subject.isDestroyed = true
+        if self.willReach then
+            MyLocator:notify(Constants.EVENT_EYE_REACHED)
+        end
+        return NullState()
+    end
 end
 
 return EnderEyeState

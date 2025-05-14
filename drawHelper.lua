@@ -15,8 +15,10 @@ function DrawHelper.addSpriteToSpritebatch(quad, x, y, sx, sy)
     spritebatch:add(quad, x, y, 0, sx, sy)
 end
 
-function DrawHelper.drawText(text, x, y, scale)
+function DrawHelper.drawText(text, x, y, scale, color)
+    love.graphics.setColor(color or { 1, 1, 1, 1 })
     love.graphics.print(text, x, y, nil, scale, scale)
+    love.graphics.setColor({ 1, 1, 1, 1 })
 end
 
 function DrawHelper.drawImage(imageName, sourceRect, destRect, color, flipX, flipY, isScreenPos)

@@ -2,6 +2,7 @@ require "requireAll"
 require "gameObject"
 require "locator"
 
+math.randomseed(os.time())
 local debugContents = {}
 
 if arg[2] == "debug" then
@@ -10,9 +11,9 @@ end
 
 function love.wheelmoved(x, y)
     if y >= 1 then
-        MyLocator.gameObjectManager.player.inventoryComp:onChangeCurrentItem(-1)
+        MyLocator.gameObjectManager.player.inventoryComp:onChangeCurrentValidItem(-1)
     elseif y <= -1 then
-        MyLocator.gameObjectManager.player.inventoryComp:onChangeCurrentItem(1)
+        MyLocator.gameObjectManager.player.inventoryComp:onChangeCurrentValidItem(1)
     end
 end
 
@@ -29,7 +30,7 @@ function love.keypressed(key)
     end
 
     if key == "space" and MyLocator.gameObjectManager:checkIsPlayerDestroyed() then
-        MyLocator.gameObjectManager:spawnPlayer()
+        MyLocator.gameObjectManager:onSpawnPlayer()
     end
 
     if key == "rshift" then
@@ -42,7 +43,7 @@ function love.load()
     love.graphics.setBackgroundColor(0.5, 0.5, 0.5)
     love.graphics.setBlendMode("alpha")
     love.graphics.setDefaultFilter("nearest", "nearest")
-    love.window.setMode(Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT, { resizable = true })
+    love.window.setMode(Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT, { resizable = false })
     love.window.setTitle("Hello World")
 
     ---@type Locator
@@ -63,9 +64,12 @@ end
 
 function love.draw()
     MyLocator:draw()
-    love.graphics.print("FPS" .. tostring(love.timer.getFPS()), 0, 0)
-    for i = 1, #debugContents do
-        love.graphics.print(tostring(debugContents[i]), 0, i * 20)
+    love.graphics.print("FPS: " .. tostring(love.timer.getFPS()), 0, 0)
+
+    if Constants.DISPLAY_DEBUG_INFO then
+        for i = 1, #debugContents do
+            love.graphics.print(tostring(debugContents[i]), 0, i * 20)
+        end
     end
 end
 

@@ -17,7 +17,11 @@ function WeaponItem:getLeftActionAnim()
 end
 
 function WeaponItem:onStartAction(subject)
-
+    local arrowItem = subject.inventoryComp:findItem(Constants.ITEM_ARROW)
+    local hasArrow = arrowItem and arrowItem.stack >= 1
+    if self.weaponType == Constants.WEAPON_TYPE_MELEE_2D or (self.weaponType == Constants.WEAPON_TYPE_RANGE and hasArrow) then
+        MyLocator:notify(Constants.EVENT_ATTACK_ACTION, self)
+    end
 end
 
 function WeaponItem:getTranformDirectionCb()
@@ -30,6 +34,15 @@ function WeaponItem:getTranformDirectionCb()
     end
 end
 
+AllTargetNames = { Constants.OBJ_NAME_ZOMBIE,
+    Constants.OBJ_NAME_SKELETON,
+    Constants.OBJ_NAME_CREEPER,
+    Constants.OBJ_NAME_ENDERMAN,
+    Constants.OBJ_NAME_ENDER_DRAGON,
+    Constants.OBJ_NAME_END_CRYSTAL,
+    Constants.OBJ_NAME_PLAYER,
+}
+
 -- data {targetPos = Vector2}
 function WeaponItem:onLeftAction(subject, data)
     local targetDmgNames = subject.name == Constants.OBJ_NAME_PLAYER and
@@ -37,7 +50,8 @@ function WeaponItem:onLeftAction(subject, data)
             Constants.OBJ_NAME_SKELETON,
             Constants.OBJ_NAME_CREEPER,
             Constants.OBJ_NAME_ENDERMAN,
-            Constants.OBJ_NAME_ENDER_DRAGON }
+            Constants.OBJ_NAME_ENDER_DRAGON,
+            Constants.OBJ_NAME_END_CRYSTAL }
         or { Constants.OBJ_NAME_PLAYER }
     local dmgInfo = DmgInfo(self.dmg, self.exploitDmg, targetDmgNames)
 

@@ -31,17 +31,31 @@ function InventoryComp:onChangeCurrentItem(indChange)
     end
 end
 
+function InventoryComp:onChangeCurrentValidItem(indChange)
+    self:onChangeCurrentItem(indChange)
+
+    local tryCount = 0
+    while self:getCurrentItemOrNull() == nil do
+        self:onChangeCurrentItem(indChange)
+        tryCount = tryCount + 1
+        if tryCount > 10 then
+            error("Some error")
+        end
+    end
+end
+
 function InventoryComp:addNewItem(item, equidItem)
-    if #self.items >= self.maxSlots then
-        print("Inventory is full! Cannot add more items.")
-        -- MyLocator:notify(Constants.EVENT_DROP_ITEM, {item = item, x = })
-        return false
+    for i = 1, self.maxSlots do
+        if self.items[i] == nil then
+            self.items[i] = item
+            if equidItem then
+                self.currentItemIndex = i
+            end
+            return true
+        end
     end
-    table.insert(self.items, item)
-    if equidItem then
-        self.currentItemIndex = #self.items
-    end
-    return true
+    print("Inventory is full! Cannot add more items.")
+    return false
 end
 
 function InventoryComp:getCurrentItemOrNull()

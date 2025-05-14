@@ -3,6 +3,7 @@ require "camera"
 require "managers.gameObjectManager"
 require "managers.uiManager"
 require "managers.soundManager"
+require "managers.enemySpawnManager"
 
 ---@class Locator
 Locator = Object:extend()
@@ -22,17 +23,21 @@ function Locator:new()
     self.uiManager = UiManager()
     ---@type SoundManager
     self.soundManager = SoundManager()
+    ---@type EnemySpawnManager
+    self.enemySpawnManager = EnemySpawnManager()
 
     self.managers = {
         self.imageManager,
         self.gameObjectManager,
         self.uiManager,
         self.soundManager,
+        self.enemySpawnManager,
     }
 
     self.observers = {
         self.soundManager,
         self.gameObjectManager,
+        self.enemySpawnManager,
     }
     return self
 end
@@ -54,19 +59,15 @@ function Locator:notify(event, data)
     end
 
     self:handleLoot(event, data)
-    if event == Constants.EVENT_DROP_ITEM then
-        local item = data.item
-        local loot = GameObjectFactory.getLootObj(data.x, data.y, item)
-        self.gameObjectManager:addGameObject(loot)
-    end
 end
 
 local lootMapping = {
-    [Constants.OBJ_NAME_SKELETON] = function() return InventoryItemFactory.getArrow() end,
+    [Constants.OBJ_NAME_SKELETON] = function() return InventoryItemFactory.getArrow():setStack(6) end,
     [Constants.OBJ_NAME_BLOCK_APPLE] = function() return InventoryItemFactory.getAppleItem() end,
-    [Constants.OBJ_NAME_BLOCK] = function() return InventoryItemFactory.getBlockItem(Constants.OBJ_NAME_BLOCK) end,
-    [Constants.OBJ_NAME_ZOMBIE] = function() return InventoryItemFactory.getMeatItem end,
+    -- [Constants.OBJ_NAME_BLOCK] = function() return InventoryItemFactory.getBlockItem(Constants.OBJ_NAME_BLOCK) end,
+    [Constants.OBJ_NAME_ZOMBIE] = function() return InventoryItemFactory.getMeatItem() end,
     [Constants.OBJ_NAME_ENDERMAN] = function() return InventoryItemFactory.getEyeOfEnderItem() end,
+    [Constants.OBJ_NAME_ENDER_DRAGON] = function() return InventoryItemFactory.getWing() end,
 }
 
 function Locator:handleLoot(event, data)
@@ -87,7 +88,7 @@ end
 
 function Locator:debugUpdate()
     local mousePosX, mousePosY = love.mouse.getPosition()
-    AddDebugStr(mousePosX .. "-" .. mousePosY)
+    AddDebugStr("mouse pos: " .. mousePosX .. "," .. mousePosY)
 end
 
 function Locator:update(dt)
@@ -96,10 +97,6 @@ function Locator:update(dt)
         value:update(dt)
     end
     self.camera:update(dt)
-
-    if MyLocator.gameObjectManager.player then
-        AddDebugStr("current item ind" .. MyLocator.gameObjectManager.player.inventoryComp.currentItemIndex)
-    end
 end
 
 function Locator:checkKeyPress(key, isNew)

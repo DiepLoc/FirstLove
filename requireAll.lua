@@ -5,6 +5,14 @@ Object                  = require "classic"
 Vector2                 = require "utils.vector2"
 Rectangle               = require "utils.rectangle"
 
+-- common
+GameObject              = require "gameObject"
+DrawHelper              = require "drawHelper"
+Constants               = require "constants"
+Factory                 = require "gameObjectFactory"
+ItemFactory             = require "inventoryItemFactory"
+CommonHelper            = require "commonHelper"
+
 -- Load components
 --- states
 BaseState               = require "components.states.baseState"
@@ -17,6 +25,8 @@ SimpleAiState           = require "components.states.simpleAiState"
 FaceToFaceTeleportState = require "components.states.faceToFaceTeleportState"
 EnderEyeState           = require "components.states.enderEyeState"
 DyingState              = require "components.states.dyingState"
+CreeperState            = require "components.states.creeperState"
+EnderDragonState        = require "components.states.enderDragonState"
 
 --- info
 BaseInfo                = require "components.infoItems.baseInfo"
@@ -24,6 +34,7 @@ CommonBlockInfo         = require "components.infoItems.commonBlockInfo"
 CommonCharInfo          = require "components.infoItems.commonCharInfo"
 DmgInfo                 = require "components.infoItems.dmgInfo"
 LootInfo                = require "components.infoItems.lootInfo"
+FireballInfo            = require "components.infoItems.fireballInfo"
 
 --- items
 BaseInvItem             = require "components.items.baseInvItem"
@@ -39,14 +50,6 @@ PositionComp            = require "components.positionComp"
 StateComp               = require "components.stateComp"
 InfoComp                = require "components.infoComp"
 InventoryComp           = require "components.inventoryComp"
-
--- common
-GameObject              = require "gameObject"
-DrawHelper              = require "drawHelper"
-Constants               = require "constants"
-Factory                 = require "gameObjectFactory"
-ItemFactory             = require "inventoryItemFactory"
-CommonHelper            = require "commonHelper"
 
 
 -- (add more classes here when you have new ones)

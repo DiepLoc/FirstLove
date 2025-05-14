@@ -14,7 +14,7 @@ function CommonHelper.getDistance(x, y, x2, y2)
 end
 
 function CommonHelper.getRandomResultByTime(time, dt)
-    return math.random() < dt / time
+    return math.random() < math.min(dt / time, 1)
 end
 
 function CommonHelper.getDirection(x2, y2, x1, y1)

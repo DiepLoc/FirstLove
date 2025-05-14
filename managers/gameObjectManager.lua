@@ -6,6 +6,7 @@ GameObjectManager = BaseManager:extend()
 function GameObjectManager:new()
     self.gameObjects = {}
     self.blocks = nil
+    self.wonShowTime = 0
     return self
 end
 
@@ -53,27 +54,37 @@ function GameObjectManager:addBlock(block, x, y, shouldOverwrite, addMidAir)
     end
 end
 
-function GameObjectManager:spawnPlayer()
+function GameObjectManager:onSpawnPlayer()
     ---@type GameObject
-    self.player = Factory.getPlayer(1, 0)
+    self.player = Factory.getPlayer(Constants.MAP_WIDTH / 2, -10)
     table.insert(self.gameObjects, self.player)
     MyLocator:notify(Constants.EVENT_PlAYER_SPAWN)
 end
 
 function GameObjectManager:onSetup()
-    self:spawnPlayer()
-    -- table.insert(self.gameObjects, Factory.getZombie(10, 10))
-    -- table.insert(self.gameObjects, Factory.getSkeleton(10, 0))
-    -- table.insert(self.gameObjects, Factory.getZombie(20, 0))
+    self:onSpawnPlayer()
+    self:onSpawnEndCystal()
+
     -- table.insert(self.gameObjects, Factory.getCreeper(30, 0))
-    table.insert(self.gameObjects, Factory.getEnderman(40, 0))
+    -- table.insert(self.gameObjects, Factory.getCreeper(32, 0))
+    -- table.insert(self.gameObjects, Factory.getCreeper(34, 0))
+    -- table.insert(self.gameObjects, Factory.getCreeper(36, 0))
+    -- table.insert(self.gameObjects, Factory.getEnderman(40, 0))
     -- table.insert(self.gameObjects, Factory.getSkeleton(50, 0))
 
-    self.enderDragonSpawnPosition = Vector2(math.random(50, 300 - 50), -20 * Constants.TILE_SIZE)
-    table.insert(self.gameObjects, Factory.getEnderDragon(self.enderDragonSpawnPosition.x / Constants.TILE_SIZE, 0))
-
+    local randomOffset = math.random() * 100
     self.blocks = GameObjectFactory.generateTerrain(Constants.MAP_WIDTH, Constants.MAP_HEIGHT,
-        Constants.MAP_GENERATE_SCALE, Constants.MAP_GENERATE_OFFSET, Constants.MAP_WATER_HEIGHT)
+        Constants.MAP_GENERATE_SCALE, randomOffset, Constants.MAP_WATER_HEIGHT)
+end
+
+function GameObjectManager:onSpawnEndCystal()
+    local spawnOffset = 100 * Constants.TILE_SIZE
+    local x1 = math.random(spawnOffset, Constants.TILE_SIZE * Constants.MAP_WIDTH / 2 - spawnOffset)
+    local finalX = x1 + (math.random() < 0.5 and Constants.TILE_SIZE * Constants.MAP_WIDTH / 2 or 0)
+    local endCrystal = Factory.getEndCrystal(finalX, 0)
+    -- local endCrystal = Factory.getEndCrystal(Constants.TILE_SIZE * Constants.MAP_WIDTH / 2 + 500, 0)
+    self.enderDragonSpawnPosition = endCrystal.positionComp:getCollisionCenter()
+    table.insert(self.gameObjects, endCrystal)
 end
 
 function GameObjectManager:getObjByName(objName)
@@ -87,8 +98,26 @@ function GameObjectManager:getObjByName(objName)
 end
 
 function GameObjectManager:onNotify(event, data)
-    if event == Constants.EVENT_GAMEOBJ_DESTROYED and data.name == Constants.OBJ_NAME_PLAYER then
+    -- spawn ender dragon
+    if event == Constants.EVENT_GAMEOBJ_DESTROYED and data.name == Constants.OBJ_NAME_END_CRYSTAL then
+        table.insert(self.gameObjects,
+            Factory.getEnderDragon(
+                self.enderDragonSpawnPosition.x / Constants.TILE_SIZE -
+                (Constants.ENDER_DRAGON_TRACKING_RANGE / Constants.TILE_SIZE / 2), 0))
+    end
 
+    -- respawn crystal and show winning message
+    if event == Constants.EVENT_GAMEOBJ_DESTROYED and data.name == Constants.OBJ_NAME_ENDER_DRAGON then
+        self.wonShowTime = 5
+        self:onSpawnEndCystal()
+    end
+
+    -- creeper explode
+    if event == Constants.EVENT_EXPLODE then
+        local creeperPos = data.positionComp:getCollisionCenter()
+        local explosion = Factory.getExplosionObj(creeperPos.x, creeperPos.y,
+            { size = Constants.TILE_SIZE * 4, dmg = 3, exploitDmg = 5 })
+        MyLocator.gameObjectManager:addGameObject(explosion)
     end
 end
 
@@ -103,15 +132,18 @@ function GameObjectManager:getObjByCondition(func)
 end
 
 ---@param collisionRect Rectangle
-function GameObjectManager:checkNonblockingRect(collisionRect)
-    for key, obj in pairs(self.gameObjects) do
-        if obj.positionComp.isBlocked and obj.positionComp:getWorldCollisionRect():collidesWith(collisionRect) then
-            return false
+function GameObjectManager:checkNonblockingRect(collisionRect, isOnGround, ignoreObjs)
+    if not ignoreObjs then
+        for key, obj in pairs(self.gameObjects) do
+            if obj.positionComp.isBlocked and obj.positionComp:getWorldCollisionRect():collidesWith(collisionRect) then
+                return false
+            end
         end
     end
 
     local tileRect = CommonHelper.getTileRect(collisionRect)
 
+    --- check non blocking
     for x = tileRect.x - 1, tileRect.right + 2 do
         for y = tileRect.y - 1, tileRect.bottom + 2 do
             if self.blocks[x] and self.blocks[x][y] then
@@ -123,6 +155,17 @@ function GameObjectManager:checkNonblockingRect(collisionRect)
                 end
             end
         end
+    end
+
+    --- check is on ground
+    if isOnGround then
+        for x = tileRect.x, tileRect.right do
+            local y = tileRect.bottom + 1
+            if self.blocks[x] and self.blocks[x][y] and self.blocks[x][y].positionComp.isBlocked then
+                return true
+            end
+        end
+        return false
     end
     return true
 end
@@ -182,7 +225,7 @@ end
 ---@param dy any
 function GameObjectManager:handleMoving(obj, dx, dy)
     if obj:checkIsDying() then return 0, 0, true end
-    if dx == 0 and dy == 0 then
+    if dx == 0 and dy == 0 and string.find(obj.name, "BLOCK") then
         return 0, 0, true
     end
     local xyMove = not self:checkAndHandleCollision(obj, dx, dy)
@@ -222,7 +265,7 @@ function GameObjectManager:handleBlocksOnView(cb)
             end
         end
     end
-    AddDebugStr(x1 .. " " .. x2 .. "/" .. y1 .. " " .. y2 .. "_Count:" .. count)
+    AddDebugStr("cam tile size: " .. x1 .. "-" .. x2 .. "," .. y1 .. "-" .. y2 .. "_draw blocks: " .. count)
 end
 
 function GameObjectManager:update(dt)
@@ -247,7 +290,9 @@ function GameObjectManager:update(dt)
         self.player = nil
     end
 
-    AddDebugStr("GameObj: " .. #self.gameObjects .. " blocks:" .. #self.blocks)
+    self.wonShowTime = self.wonShowTime - (self.wonShowTime > 0 and dt or 0)
+    AddDebugStr("GameObj: " .. #self.gameObjects .. " mapTileWidth: " .. #self.blocks)
+    AddDebugStr("Crystal: " .. tostring(self.enderDragonSpawnPosition))
 end
 
 function GameObjectManager:checkIsPlayerDestroyed()
@@ -257,7 +302,16 @@ end
 function GameObjectManager:drawPlayerRespawnMessage()
     if self:checkIsPlayerDestroyed() then
         DrawHelper.drawText("You Died! Hit 'space' to Respawn", Constants.WINDOW_WIDTH / 2 - 300,
-            Constants.WINDOW_HEIGHT / 2 - 50, 3)
+            Constants.WINDOW_HEIGHT - 100, 3)
+    end
+end
+
+function GameObjectManager:drawWinningMessage()
+    if self.wonShowTime > 0 then
+        DrawHelper.drawText("VICTORY!", Constants.WINDOW_WIDTH / 2 - 100,
+            Constants.WINDOW_HEIGHT / 2 - 100, 4, { 1, 85 / 255, 0, 1 })
+        DrawHelper.drawText("Thanks for playing", Constants.WINDOW_WIDTH / 2 - 100,
+            Constants.WINDOW_HEIGHT / 2 - 50, 4, { 1, 85 / 255, 0, 1 })
     end
 end
 
@@ -271,6 +325,7 @@ function GameObjectManager:draw()
     end)
     DrawHelper.drawSpriteBatch()
     self:drawPlayerRespawnMessage()
+    self:drawWinningMessage()
 end
 
 return GameObjectManager

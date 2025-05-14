@@ -37,16 +37,25 @@ function InventoryItemFactory.getAppleItem()
 end
 
 function InventoryItemFactory.getMeatItem()
-    return ConsumableItem(Constants.ITEM_MEAT, 0, 3):setStackable()
+    return ConsumableItem(Constants.ITEM_MEAT, 0, 2):setStackable()
 end
 
 function InventoryItemFactory.getEyeOfEnderItem()
     local onConsume = function(subject)
         local subjectPos = subject.positionComp:getCollisionCenter()
         local obj = Factory.getEyeOfEnderObj(subjectPos.x, subjectPos.y)
+        MyLocator:notify(Constants.EVENT_EYE_OF_ENDER_USE)
         MyLocator.gameObjectManager:addGameObject(obj)
     end
     return ConsumableItem(Constants.ITEM_EYE_OF_ENDER, 0, 0, onConsume):setStackable()
+end
+
+function InventoryItemFactory.getWing()
+    local onConsume = function(subject)
+        subject.positionComp:setFying()
+    end
+    local item = ConsumableItem(Constants.ITEM_WING, 0, 0, onConsume):setStackable()
+    return item
 end
 
 return InventoryItemFactory

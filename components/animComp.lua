@@ -47,6 +47,10 @@ function AnimComp:update(subject, dt)
     -- self.isInsideScreen = MyLocator.camera:worldToScreenOrNull(subject.positionComp.displayRect) ~= nil
 end
 
+function AnimComp:addDyingAnim()
+    return self:addAnim("dying", Sprite("characters", 16, 16, 5, 13, 5, 0))
+end
+
 function AnimComp:draw(positionComp)
     if not positionComp.isVisible then return end
 

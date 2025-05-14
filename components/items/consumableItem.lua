@@ -14,7 +14,7 @@ function ConsumableItem:getLeftActionAnim()
 end
 
 function ConsumableItem:onStartAction(subject)
-    if self.healVal ~= 0 and self.foodVal ~= 0 then
+    if self.healVal ~= 0 or self.foodVal ~= 0 then
         MyLocator:notify(Constants.EVENT_EATING)
     end
 end
@@ -23,7 +23,7 @@ end
 ---@param data any
 function ConsumableItem:onLeftAction(subject, data)
     local charInfo = subject.infoComp:getInfo(CommonCharInfo)
-    if charInfo and self.healVal ~= 0 and self.foodVal ~= 0 then
+    if charInfo and (self.healVal ~= 0 or self.foodVal ~= 0) then
         charInfo:onHeal(self.healVal)
         charInfo:onEat(self.foodVal)
         self:onConsume()

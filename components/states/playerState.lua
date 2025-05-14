@@ -37,7 +37,7 @@ function PlayerState:update(subject, dt)
         newVelo.x = newVelo.x + 1
     end
 
-    if positionComp.isGrounded and MyLocator:checkKeyPress("space", false) then
+    if MyLocator:checkKeyPress("space", false) then
         positionComp:onJump(dt)
     end
     positionComp.velocity = newVelo

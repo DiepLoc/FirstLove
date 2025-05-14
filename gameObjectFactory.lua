@@ -20,7 +20,7 @@ function GameObjectFactory.getPlayer(tileX, tileY)
         :addAnim("attack-left", Sprite("characters", 16, 16, 3, 2, Constants.COMMON_ACTION_FPS, 0):setFlipX())
         :addAnim("attack-range-right", Sprite("characters", 16, 16, 3, 3, Constants.COMMON_ACTION_FPS, 0))
         :addAnim("attack-range-left", Sprite("characters", 16, 16, 3, 3, Constants.COMMON_ACTION_FPS, 0):setFlipX())
-        :addAnim("dying", Sprite("characters", 16, 16, 5, 12, 5, 0))
+        :addDyingAnim()
     local positionComp = PositionComp(tileX * Constants.TILE_SIZE, tileY * Constants.TILE_SIZE, Constants.PLAYER_SIZE,
         Constants.PLAYER_SIZE):setCollisionRect(5 / 16 * Constants.PLAYER_SIZE, 3 / 16 * Constants.PLAYER_SIZE,
         6 / 16 * Constants.PLAYER_SIZE, 13 / 16 * Constants.PLAYER_SIZE)
@@ -28,27 +28,32 @@ function GameObjectFactory.getPlayer(tileX, tileY)
     local obj = GameObject(anim, positionComp, stateComp, Constants.OBJ_NAME_PLAYER)
     obj.infoComp:addInfo(CommonCharInfo():setHungryable())
     obj.inventoryComp = InventoryComp()
-    obj.inventoryComp:addItem(InventoryItemFactory.getPickaxe(), true)
-    obj.inventoryComp:addItem(InventoryItemFactory.getSword())
-    obj.inventoryComp:addItem(InventoryItemFactory.getBow(), true)
-    obj.inventoryComp:addItem(InventoryItemFactory.getArrow():setStack(10))
-    obj.inventoryComp:addItem(InventoryItemFactory.getBlockItem(Constants.OBJ_NAME_BLOCK):setStack(50))
-    obj.inventoryComp:addItem(InventoryItemFactory.getEyeOfEnderItem())
-    obj.inventoryComp:addItem(InventoryItemFactory.getEyeOfEnderItem():setStack(20))
+    obj.inventoryComp:addItem(InventoryItemFactory.getSword(), true)
+    obj.inventoryComp:addItem(InventoryItemFactory.getPickaxe())
+    obj.inventoryComp:addItem(InventoryItemFactory.getBow())
+    obj.inventoryComp:addItem(InventoryItemFactory.getArrow():setStack(5))
+    -- obj.inventoryComp:addItem(InventoryItemFactory.getBlockItem(Constants.OBJ_NAME_BLOCK):setStack(50))
+    -- obj.inventoryComp:addItem(InventoryItemFactory.getEyeOfEnderItem():setStack(10))
+    -- obj.inventoryComp:addItem(InventoryItemFactory.getWing())
     return obj
 end
 
--- function GameObjectFactory.getMobObj(tileX, tileY, row, attackAnim, name, attkRange, isHuge)
+-- function GameObjectFactory.getMobObj(tileX, tileY, row, attackAnim, name, attkRange, isHuge, idleFrameNum)
 ---@return GameObject
 function GameObjectFactory.getMobObj(tileX, tileY, row, name, data)
+    data = data or {}
     local frameHeight = (data.yScale or 1) * 16
     local frameWidth = (data.xScale or 1) * 16
-    local anim = AnimComp("idle-right", Sprite("characters", frameWidth, frameHeight, 1, row, 1, 0))
-        :addAnim("idle-left", Sprite("characters", frameWidth, frameHeight, 1, row, 1, 0):setFlipX())
+    local anim = AnimComp("idle-right",
+            Sprite("characters", frameWidth, frameHeight, data.idle and data.idle.frame or 1, row,
+                data.idle and data.idle.fps or 1, 0))
+        :addAnim("idle-left",
+            Sprite("characters", frameWidth, frameHeight, data.idle and data.idle.frame or 1, row,
+                data.idle and data.idle.fps or 1, 0):setFlipX())
         :addAnim("run-right", Sprite("characters", frameWidth, frameHeight, 4, row + 1, Constants.COMMON_ACTION_FPS, 0))
         :addAnim("run-left",
             Sprite("characters", frameWidth, frameHeight, 4, row + 1, Constants.COMMON_ACTION_FPS, 0):setFlipX())
-        :addAnim("dying", Sprite("characters", 16, 16, 5, 12, 5, 0))
+        :addDyingAnim()
     if data.attackAnim then
         anim:addAnim(data.attackAnim .. "-right",
             Sprite("characters", frameWidth, frameHeight, 3, row + 2, Constants.COMMON_ACTION_FPS, 0))
@@ -78,6 +83,7 @@ end
 function GameObjectFactory.getZombie(tileX, tileY)
     local obj = GameObjectFactory.getMobObj(tileX, tileY, 4, Constants.OBJ_NAME_ZOMBIE)
     obj.infoComp:addInfo(DmgInfo(1, 0, { Constants.OBJ_NAME_PLAYER }, false))
+    obj.infoComp:getInfo(CommonCharInfo):setBaseHealth(4)
     return obj
 end
 
@@ -86,12 +92,15 @@ function GameObjectFactory.getSkeleton(tileX, tileY)
         { attackAnim = "attack-range", attkRange = 200 })
     obj.inventoryComp = InventoryComp()
     obj.inventoryComp:addItem(InventoryItemFactory.getBow(), true)
+    obj.inventoryComp:addItem(InventoryItemFactory.getArrow():setStack(1000))
     return obj
 end
 
 function GameObjectFactory.getCreeper(tileX, tileY)
-    local obj = GameObjectFactory.getMobObj(tileX, tileY, 9, Constants.OBJ_NAME_CREEPER)
+    local obj = GameObjectFactory.getMobObj(tileX, tileY, 9, Constants.OBJ_NAME_CREEPER, { attackAnim = "attack" })
     obj.inventoryComp = InventoryComp()
+    obj.infoComp:getInfo(CommonCharInfo):setBaseHealth(4)
+    obj.stateComp = StateComp(CreeperState())
     return obj
 end
 
@@ -113,9 +122,13 @@ end
 
 function GameObjectFactory.getEnderDragon(tileX, tileY)
     local obj = GameObjectFactory.getMobObj(tileX, tileY, 20, Constants.OBJ_NAME_ENDER_DRAGON,
-        { xScale = 2, yScale = 1, sizeScale = 2 })
+        { xScale = 2, yScale = 1, sizeScale = 2, idle = { frame = 4, fps = Constants.COMMON_ACTION_FPS } })
     obj.infoComp:addInfo(DmgInfo(1, 0, { Constants.OBJ_NAME_PLAYER }, false))
+    obj.infoComp:getInfo(CommonCharInfo):setBaseHealth(15)
     obj.positionComp:setZeroGravity()
+    obj.positionComp.isBlocked = false
+    obj.positionComp.speed = 500
+    obj.stateComp = StateComp(EnderDragonState())
     obj.inventoryComp = InventoryComp()
     return obj
 end
@@ -143,33 +156,48 @@ end
 function GameObjectFactory.getTreeBlock(tileX, tileY)
     return GameObjectFactory.getSolidBlock(tileX, tileY, 2, 0, function(obj)
         obj.positionComp.isBlocked = false
-        obj.infoComp:addInfo(CommonBlockInfo(false, true))
+        obj.infoComp:addInfo(CommonBlockInfo(false, true, 2))
         obj.name = Constants.OBJ_NAME_BLOCK_WOOD
     end)
 end
 
 function GameObjectFactory.getLeafBlock(tileX, tileY)
     return GameObjectFactory.getSolidBlock(tileX, tileY, 3, 0, function(obj)
-        obj.infoComp:addInfo(CommonBlockInfo(false, true))
+        obj.infoComp:addInfo(CommonBlockInfo(false, true, 1))
         obj.name = Constants.OBJ_NAME_BLOCK_LEAF
     end)
 end
 
 function GameObjectFactory.getAppleBlock(tileX, tileY)
     return GameObjectFactory.getSolidBlock(tileX, tileY, 4, 0, function(obj)
-        obj.infoComp:addInfo(CommonBlockInfo(false, true))
+        obj.infoComp:addInfo(CommonBlockInfo(false, true, 1))
         obj.name = Constants.OBJ_NAME_BLOCK_APPLE
     end)
 end
 
 function GameObjectFactory.getDmgObj(x, y, dmgInfo, dmgSize)
     dmgSize = dmgSize or Constants.EXPLOIT_SIZE
-    local anim = AnimComp("idle-right", Sprite("general", 16, 16, 1, 0, 1, 3))
+    local anim = AnimComp("idle-right", Sprite("general", 16, 16, 1, 1, 1, 9))
     local positionComp = PositionComp(x - dmgSize / 2, y - dmgSize / 2, dmgSize, dmgSize)
     positionComp.isBlocked = false
     local stateComp = StateComp(ShortLifeState())
     local obj = GameObject(anim, positionComp, stateComp, Constants.OBJ_NAME_DMG)
     obj.infoComp:addInfo(dmgInfo or DmgInfo(0, 1))
+    return obj
+end
+
+-- data: {size, dmg, exploitDmg}
+function GameObjectFactory.getExplosionObj(x, y, data)
+    data = data or {}
+    local size = data.size or Constants.TILE_SIZE
+    local anim = AnimComp("idle-right", Sprite("general", 16, 16, 1, 0, 1, 3))
+        :addAnim("dying", Sprite("characters", 16, 16, 5, 12, 5, 0))
+    local positionComp = PositionComp(x - size / 2, y - size / 2, size,
+        size):setZeroGravity()
+    positionComp.isBlocked = false
+    local stateComp = StateComp(ShortLifeState(nil, true))
+    local obj = GameObject(anim, positionComp, stateComp, Constants.OBJ_NAME_DMG)
+    obj.infoComp:addInfo(data.dmgInfo or DmgInfo(data.dmg or 3, data.exploitDmg or 10, AllTargetNames, false))
     return obj
 end
 
@@ -185,8 +213,33 @@ function GameObjectFactory.getArrow(x, y, directionVec, speed, dmgInfo)
     return obj
 end
 
+function GameObjectFactory.getFireball(x, y, directionVec, speed)
+    local anim = AnimComp("idle-right", Sprite("general", 16, 16, 1, 2, 1, 4))
+    local positionComp = PositionComp(x - Constants.TILE_SIZE / 2, y - Constants.TILE_SIZE / 2, Constants.TILE_SIZE,
+        Constants.TILE_SIZE):setCollisionRect(4 * 2, 4 * 2, 8 * 2,
+        8 * 2):setZeroGravity()
+    positionComp.isBlocked = false
+    local stateComp = StateComp(FlyState(directionVec, speed or 500))
+    local obj = GameObject(anim, positionComp, stateComp)
+    obj.infoComp:addInfo(FireballInfo())
+    return obj
+end
+
+function GameObjectFactory.getEndCrystal(x, y)
+    local anim = AnimComp("idle-right", Sprite("general", 16, 16, 3, 4, Constants.COMMON_ACTION_FPS, 0))
+        :addDyingAnim()
+    local positionComp = PositionComp(x - Constants.TILE_SIZE / 2, y - Constants.TILE_SIZE / 2, Constants.TILE_SIZE,
+        Constants.TILE_SIZE):setZeroGravity()
+    positionComp.isBlocked = false
+    local stateComp = StateComp(NullState())
+    local obj = GameObject(anim, positionComp, stateComp, Constants.OBJ_NAME_END_CRYSTAL)
+    obj.infoComp:addInfo(CommonCharInfo(1))
+    return obj
+end
+
 function GameObjectFactory.getEyeOfEnderObj(x, y)
     local anim = AnimComp("idle-right", Sprite("general", 16, 16, 1, 3, 1, 6))
+        :addDyingAnim()
     local positionComp = PositionComp(x - Constants.TILE_SIZE / 2, y - Constants.TILE_SIZE / 2, Constants.TILE_SIZE,
         Constants.TILE_SIZE):setCollisionRect(4 * 2, 4 * 2, 6 * 2,
         6 * 2):setZeroGravity()

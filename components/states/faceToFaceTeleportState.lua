@@ -23,6 +23,7 @@ function FaceToFaceTeleportState:update(subject, dt)
         self.remainingTeleportWaitTime = 3
     else
         self:simpleTracking(subject, vector, dxVal, dyVal)
+        print("tracking")
     end
 
     self.remainingTeleportWaitTime = self.remainingTeleportWaitTime - dt
@@ -32,8 +33,8 @@ end
 
 function FaceToFaceTeleportState:softTeleport(subject, targetPosition)
     local targetTile = CommonHelper.getTilePos(targetPosition)
-    for x = -4, 4 do
-        if math.abs(x) >= 2 then
+    for x = -5, 5 do
+        if math.abs(x) >= 3 then
             for y = -3, 3 do
                 local success = subject:onTeleport(targetTile.x + x, targetTile.y + y)
                 if success then

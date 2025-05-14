@@ -1,14 +1,23 @@
 CommonCharInfo = BaseInfo:extend()
 
 function CommonCharInfo:new(health)
-    self.health = health or 5
-    self.maxHealth = self.health
-    self.hunger = 10
+    self:setBaseHealth(health or 5)
+    self.hunger = 5
     self.maxHunger = self.hunger
     self.isHungryable = false
     self.remainingHungerDmgTime = 0
     self.remainingInvincibleTime = 0
     return self
+end
+
+function CommonCharInfo:setBaseHealth(val)
+    self.health = val
+    self.maxHealth = val
+    return self
+end
+
+function CommonCharInfo:isHungry()
+    return self.isHungryable and self.hunger <= 0
 end
 
 function CommonCharInfo:isInvincible()
@@ -18,6 +27,10 @@ end
 function CommonCharInfo:setHungryable()
     self.isHungryable = true
     return self
+end
+
+function CommonCharInfo:isHealing()
+    return self.hunger >= 3
 end
 
 ---@param subject GameObject
@@ -40,16 +53,16 @@ function CommonCharInfo:update(subject, dt)
         self.hunger = self.hunger - dt * Constants.HUNGER_SPEED
     end
 
-    if self.hunger <= 0 then
+    if self:isHungry() then
         self.remainingHungerDmgTime = self.remainingHungerDmgTime - dt
         if self.remainingHungerDmgTime <= 0 then
-            if self.health > 1 then self:onDamaged(subject, 1) end
+            if self.health > 1 then self:onDamaged(subject, 0.5) end
             self.remainingHungerDmgTime = Constants.HUNGER_DMG_DELAY_TIME
         end
     end
 
-    if self.hunger > 9 then
-        self.health = math.min(self.health + 0.1 * dt, self.maxHealth)
+    if self:isHealing() then
+        self.health = math.min(self.health + Constants.HEAL_WHEN_FULL * dt, self.maxHealth)
     end
 end
 
