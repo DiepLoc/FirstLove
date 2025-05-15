@@ -10,7 +10,7 @@ end
 function CommonHelper.getDistance(x, y, x2, y2)
     local dx = x2 - x
     local dy = y2 - y
-    return math.sqrt(dx * dx + dy * dy), math.abs(dx), math.abs(dy)
+    return math.sqrt(dx * dx + dy * dy), math.abs(dx), math.abs(dy), dx, dy
 end
 
 function CommonHelper.getRandomResultByTime(time, dt)
@@ -57,8 +57,22 @@ function CommonHelper.get2dDirectionFromDirection(x2, y2, x1, y1)
     error("Invalid angle: " .. degrees)
 end
 
+function CommonHelper.getColorByInt(r, g, b, a)
+    return { r / 255, g / 255, b / 255, a or 1 }
+end
+
 function CommonHelper.lerpValue(initVal, targetVal, factor)
     return initVal + (targetVal - initVal) * factor
+end
+
+function CommonHelper.clamp(val, min, max)
+    if val < min then
+        return min
+    end
+    if val > max then
+        return max
+    end
+    return val
 end
 
 return CommonHelper

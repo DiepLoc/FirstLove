@@ -62,12 +62,15 @@ function Locator:notify(event, data)
 end
 
 local lootMapping = {
-    [Constants.OBJ_NAME_SKELETON] = function() return InventoryItemFactory.getArrow():setStack(6) end,
-    [Constants.OBJ_NAME_BLOCK_APPLE] = function() return InventoryItemFactory.getAppleItem() end,
+    [Constants.OBJ_NAME_SKELETON] = function(obj)
+        return InventoryItemFactory.getArrow():setStack(obj.positionComp
+            .isFlying and 20 or 6)
+    end,
+    [Constants.OBJ_NAME_BLOCK_APPLE] = function(obj) return InventoryItemFactory.getAppleItem() end,
     -- [Constants.OBJ_NAME_BLOCK] = function() return InventoryItemFactory.getBlockItem(Constants.OBJ_NAME_BLOCK) end,
-    [Constants.OBJ_NAME_ZOMBIE] = function() return InventoryItemFactory.getMeatItem() end,
-    [Constants.OBJ_NAME_ENDERMAN] = function() return InventoryItemFactory.getEyeOfEnderItem() end,
-    [Constants.OBJ_NAME_ENDER_DRAGON] = function() return InventoryItemFactory.getWing() end,
+    [Constants.OBJ_NAME_ZOMBIE] = function(obj) return InventoryItemFactory.getMeatItem() end,
+    [Constants.OBJ_NAME_ENDERMAN] = function(obj) return InventoryItemFactory.getEyeOfEnderItem() end,
+    [Constants.OBJ_NAME_ENDER_DRAGON] = function(obj) return InventoryItemFactory.getWing() end,
 }
 
 function Locator:handleLoot(event, data)
@@ -76,7 +79,7 @@ function Locator:handleLoot(event, data)
         local center = obj.positionComp:getCollisionCenter()
         local cb = lootMapping[obj.name]
         if cb then
-            local loot = GameObjectFactory.getLootObj(center.x, center.y, cb())
+            local loot = GameObjectFactory.getLootObj(center.x, center.y, cb(obj))
             self.gameObjectManager:addGameObject(loot)
             return
         elseif string.find(obj.name, "BLOCK") then

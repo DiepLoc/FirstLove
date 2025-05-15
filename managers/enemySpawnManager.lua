@@ -12,16 +12,17 @@ function EnemySpawnManager:onNotify(event, data)
 end
 
 local basicMobGenerates = {
-    Factory.getZombie,
     Factory.getSkeleton,
+    Factory.getZombie,
     Factory.getEnderman,
-    Factory.getCreeper
+    Factory.getCreeper,
 }
 
 function EnemySpawnManager:update(dt)
     local existingObjs = MyLocator.gameObjectManager:getObjByCondition(function(subject)
         return Constants.COMMON_ENEMY_NAMES[subject.name] ~= nil
     end)
+
     self.remainingCheckWaitTime = self.remainingCheckWaitTime - (self.remainingCheckWaitTime > 0 and dt or 0)
 
     AddDebugStr("Common Mobs: " .. #existingObjs)
@@ -33,7 +34,7 @@ function EnemySpawnManager:update(dt)
     local windowRect = MyLocator.camera:getBaseWindowRect()
     local rectTile = CommonHelper.getTileRect(windowRect)
 
-    local enderDragons = MyLocator.gameObjectManager:getObjsByName(Constants.OBJ_NAME_ENDER_DRAGON)
+    local enderDragon = MyLocator.gameObjectManager:getObjByNameOrNull(Constants.OBJ_NAME_ENDER_DRAGON)
 
 
     local camCenter = MyLocator.camera:getRect():getCenter()
@@ -53,7 +54,7 @@ function EnemySpawnManager:update(dt)
     local startY = isReverse and rectTile.y - 10 or rectTile.bottom + 10
     local endY = isReverse and rectTile.bottom + 10 or rectTile.y - 10
     local dy = isReverse and 3 or -3
-    local spawnReductionByDragonFactor = (#enderDragons > 0 and 4 or 1)
+    local spawnReductionByDragonFactor = enderDragon and 4 or 1
 
 
     if #existingObjs < 5 and CommonHelper.getRandomResultByTime((#existingObjs + 1) * 0.75 * spawnReductionByDragonFactor, dt + self.checkDelayTime) then
@@ -62,6 +63,10 @@ function EnemySpawnManager:update(dt)
                 for y = startY, endY, dy do
                     if (y < rectTile.y or y > rectTile.bottom) and y > 0 and y < Constants.MAP_HEIGHT then
                         local obj = basicMobGenerates[math.random(1, #basicMobGenerates)](x, y)
+                        -- post end game mods
+                        if MyLocator.gameObjectManager.winTimestamp and obj.name == Constants.OBJ_NAME_SKELETON then
+                            obj = Factory.addFlyingAbility(obj)
+                        end
                         local collisionRect = obj.positionComp:getWorldCollisionRect()
                         if MyLocator.gameObjectManager:checkNonblockingRect(collisionRect, true) then
                             MyLocator.gameObjectManager:addGameObject(obj)

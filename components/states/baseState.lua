@@ -16,6 +16,10 @@ function BaseState:onStop()
     -- Handle any cleanup or state transition logic here
 end
 
+---@param subject GameObject
+---@param direction any
+---@param dxVal any
+---@param dyVal any
 function BaseState:simpleTracking(subject, direction, dxVal, dyVal)
     local velocity = Vector2(0, 0)
     -- basic following
@@ -25,15 +29,13 @@ function BaseState:simpleTracking(subject, direction, dxVal, dyVal)
         velocity.x = -1
     end
 
-    if direction.y > 0 and dyVal > 5 then
-        velocity.y = 1
-    elseif direction.y < 0 and dyVal > 5 then
-        velocity.y = -1
-    end
     subject.positionComp.velocity = velocity
 
     -- random jump
     local isJump = (dxVal > 33 or dyVal > 70) and math.random() < 0.01
+    if subject.positionComp.isFlying and not isJump then
+        isJump = direction.y < 0 and math.random() < 0.2
+    end
     if isJump then
         subject.positionComp:onJump()
     end

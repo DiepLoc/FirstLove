@@ -47,6 +47,8 @@ function CreeperState:update(subject, dt)
         end
         -- tracking
         self:simpleTracking(subject, direction, dxVal, dyVal)
+    else
+        self:randomMoving(subject, dt)
     end
 
     self:updateSimpleAnim(subject)

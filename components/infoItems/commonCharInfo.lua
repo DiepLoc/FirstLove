@@ -33,6 +33,10 @@ function CommonCharInfo:isHealing()
     return self.hunger >= 3
 end
 
+function CommonCharInfo:getHealthRatio()
+    return self.health / self.maxHealth
+end
+
 ---@param subject GameObject
 ---@param dt any
 function CommonCharInfo:update(subject, dt)

@@ -44,6 +44,34 @@ function UiManager:showInventory(player)
     end
 end
 
+function UiManager:showDragonHealth()
+    local dragon = MyLocator.gameObjectManager:getObjByNameOrNull(Constants.OBJ_NAME_ENDER_DRAGON)
+    if not dragon then return end
+
+    local isSuper = MyLocator.gameObjectManager.winTimestamp ~= nil
+
+    local healthBarSize = Vector2(300, 10)
+    local anchor = Vector2((Constants.WINDOW_WIDTH - healthBarSize.x) / 2, 50)
+    local border = 3
+    local healthRatio = dragon.infoComp:getInfo(CommonCharInfo):getHealthRatio()
+    local yOffset = 3
+
+    -- show name
+    if isSuper then
+        DrawHelper.drawText("Super Ender Dragon", (Constants.WINDOW_WIDTH - 250) / 2, 20, 2, { 1, 0, 0, 1 })
+    else
+        DrawHelper.drawText("Ender Dragon", (Constants.WINDOW_WIDTH - 150) / 2, 20, 2)
+    end
+
+    -- show health bar
+    DrawHelper.drawRect(anchor.x - border, anchor.y - border, healthBarSize.x + border * 2,
+        healthBarSize.y + border * 2,
+        CommonHelper.getColorByInt(146, 5, 148), true)
+    DrawHelper.drawRect(anchor.x, anchor.y, healthBarSize.x * healthRatio, healthBarSize.y - yOffset,
+        CommonHelper.getColorByInt(223, 0, 227),
+        true)
+end
+
 function UiManager:showPlayerHealth(player)
     local charInfo = player.infoComp:getInfo(CommonCharInfo)
     local playerHealth = charInfo.health
@@ -84,6 +112,7 @@ function UiManager:showPlayerHunger(player)
 end
 
 function UiManager:draw()
+    self:showDragonHealth()
     local player = MyLocator.gameObjectManager.player
     if not player then return end
 

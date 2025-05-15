@@ -23,6 +23,11 @@ function PositionComp:new(x, y, width, height, isBlocked, isCollidable, isVisibl
     return self
 end
 
+function PositionComp:setSpeed(speed)
+    self.speed = speed
+    return self
+end
+
 function PositionComp:setZeroGravity()
     self.isZeroGravity = true
     return self
@@ -30,8 +35,8 @@ end
 
 function PositionComp:onInWaterHandle(dt)
     self.speedRate = Constants.WATER_SPEED_RATE
-    if self.swimFactor <= 1 then
-        self.swimFactor = self.swimFactor + 0.01
+    if self.swimFactor <= 0.5 then
+        self.swimFactor = self.swimFactor + dt * 2
     end
 end
 
@@ -43,7 +48,7 @@ end
 
 function PositionComp:onJump(dt)
     -- Handle jump logic here
-    if self.swimFactor > 0.5 or self.isGrounded then
+    if self.swimFactor > 0.25 or self.isGrounded then
         self.gravity = self.jump_gravity
         self.swimFactor = 0
     elseif self.isFlying then
@@ -59,6 +64,9 @@ end
 ---@param obj GameObject
 ---@param dt any
 function PositionComp:update(obj, dt)
+    if self:getWorldCollisionRect().bottom > (Constants.MAP_HEIGHT - Constants.MAP_WATER_HEIGHT + 1) * Constants.TILE_SIZE then
+        self:onInWaterHandle(dt)
+    end
     self.gravity = self.gravity + Constants.GRAVITY * self.speedRate * dt
 
     local normalize = self.velocity:normalize()
@@ -119,7 +127,7 @@ function PositionComp:move(x, y)
 end
 
 function PositionComp:draw()
-    if self.isFlying then
+    if self.isFlying and self.flyingAnim then
         self.flyingAnim:draw(self)
     end
 end

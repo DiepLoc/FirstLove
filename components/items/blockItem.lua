@@ -18,7 +18,7 @@ function BlockItem:onLeftAction(subject, data)
     local targetPos = data.targetPos
     local tilePos = CommonHelper.getTilePos(targetPos)
 
-    if (subjectTile - tilePos):length() > 4 then
+    if (subjectTile - tilePos):length() > 8 then
         return
     end
     local block = self.generateBlockCb(tilePos.x, tilePos.y)

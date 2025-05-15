@@ -10,6 +10,11 @@ GameTimer = {
     h = 0
 }
 
+local background = {
+    R = 120,
+    G = 160,
+    B = 180,
+}
 if arg[2] == "debug" then
     require("lldebugger").start()
 end
@@ -41,6 +46,28 @@ function love.keypressed(key)
     if key == "rshift" then
         local a = 1
     end
+
+    if not Constants.DEBUG_BACKGROUND_COLOR then return end
+
+    local changeVal = 5
+    if key == "1" then
+        background.R = CommonHelper.clamp(background.R + changeVal, 0, 255)
+    end
+    if key == "4" then
+        background.R = CommonHelper.clamp(background.R - changeVal, 0, 255)
+    end
+    if key == "2" then
+        background.G = CommonHelper.clamp(background.G + changeVal, 0, 255)
+    end
+    if key == "5" then
+        background.G = CommonHelper.clamp(background.G - changeVal, 0, 255)
+    end
+    if key == "3" then
+        background.B = CommonHelper.clamp(background.B + changeVal, 0, 255)
+    end
+    if key == "6" then
+        background.B = CommonHelper.clamp(background.B - changeVal, 0, 255)
+    end
 end
 
 function love.load()
@@ -62,9 +89,11 @@ function AddDebugStr(str)
 end
 
 function love.update(dt)
+    love.graphics.setBackgroundColor(background.R / 255, background.G / 255, background.B / 255)
     debugContents = {}
     -- Update logic here
     MyLocator:update(dt)
+    AddDebugStr("(" .. background.R .. "," .. background.G .. "," .. background.B .. ")")
     GameTimerUpdate(dt)
 end
 

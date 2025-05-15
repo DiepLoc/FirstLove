@@ -8,6 +8,7 @@ function GameObjectManager:new()
     self.blocks = nil
     self.wonShowTime = 0
     self.winTimestamp = nil
+    self.savedPlayer = nil
     return self
 end
 
@@ -16,14 +17,14 @@ function GameObjectManager:addGameObject(gameObject)
 end
 
 function GameObjectManager:checkValidLinkedBlock(x, y)
-    if x < 1 or x > #self.blocks or y < 1 or y > #self.blocks[x] then
+    if x < 1 or x > Constants.MAP_WIDTH or y < 1 or y > Constants.MAP_HEIGHT then
         return false
     end
-    return self.blocks[x][y] ~= nil
+    return y > Constants.MAP_WATER_HEIGHT or self.blocks[x][y] ~= nil
 end
 
 function GameObjectManager:addBlock(block, x, y, shouldOverwrite, addMidAir)
-    if x < 1 or x > #self.blocks or y < 1 or y > #self.blocks[x] then
+    if x < 1 or x > Constants.MAP_WIDTH or y < 1 or y > Constants.MAP_HEIGHT then
         return false
     end
 
@@ -43,7 +44,7 @@ function GameObjectManager:addBlock(block, x, y, shouldOverwrite, addMidAir)
     end
 
     if self.blocks[x][y] then
-        if shouldOverwrite or self.blocks[x][y].name == Constants.OBJ_NAME_WATER then
+        if shouldOverwrite then
             self.blocks[x][y] = block
             return true
         else
@@ -58,32 +59,46 @@ end
 function GameObjectManager:onSpawnPlayer()
     ---@type GameObject
     self.player = Factory.getPlayer(Constants.MAP_WIDTH / 2, -10)
+    if self.savedPlayer then
+        self.player.inventoryComp = self.savedPlayer.inventoryComp
+        self.player.infoComp:getInfo(CommonCharInfo).health = 1
+        self.player.infoComp:getInfo(CommonCharInfo).hunger = 2
+        if self.savedPlayer.positionComp.isFlying then
+            self.player.positionComp:setFying()
+        end
+        self.savedPlayer = nil
+    end
     table.insert(self.gameObjects, self.player)
     MyLocator:notify(Constants.EVENT_PlAYER_SPAWN)
 end
 
 function GameObjectManager:onSetup()
     self:onSpawnPlayer()
-    self:onSpawnEndCystal()
-
-    -- table.insert(self.gameObjects, Factory.getCreeper(30, 0))
-    -- table.insert(self.gameObjects, Factory.getCreeper(32, 0))
-    -- table.insert(self.gameObjects, Factory.getCreeper(34, 0))
-    -- table.insert(self.gameObjects, Factory.getCreeper(36, 0))
-    -- table.insert(self.gameObjects, Factory.getEnderman(40, 0))
-    -- table.insert(self.gameObjects, Factory.getSkeleton(50, 0))
+    self:onSpawnNewEndCystal()
 
     local randomOffset = math.random() * 100
     self.blocks = GameObjectFactory.generateTerrain(Constants.MAP_WIDTH, Constants.MAP_HEIGHT,
         Constants.MAP_GENERATE_SCALE, randomOffset, Constants.MAP_WATER_HEIGHT)
 end
 
-function GameObjectManager:onSpawnEndCystal()
+function GameObjectManager:onSpawnNewEndCystal()
+    local oldDragon = self:getObjByNameOrNull(Constants.OBJ_NAME_ENDER_DRAGON)
+    if oldDragon then
+        oldDragon.isDestroyed = true
+    end
+
+    local oldCrystal = self:getObjByNameOrNull(Constants.OBJ_NAME_END_CRYSTAL)
+    if oldCrystal then
+        oldCrystal.isDestroyed = true
+    end
+
     local spawnOffset = 100 * Constants.TILE_SIZE
     local x1 = math.random(spawnOffset, Constants.TILE_SIZE * Constants.MAP_WIDTH / 2 - spawnOffset)
     local finalX = x1 + (math.random() < 0.5 and Constants.TILE_SIZE * Constants.MAP_WIDTH / 2 or 0)
     local endCrystal = Factory.getEndCrystal(finalX, 0)
-    -- local endCrystal = Factory.getEndCrystal(Constants.TILE_SIZE * Constants.MAP_WIDTH / 2 + 500, 0)
+    if Constants.DEBUG_DRAGON_OR_CRYSTAL then
+        endCrystal = Factory.getEndCrystal(Constants.TILE_SIZE * Constants.MAP_WIDTH / 2 + 500, 0)
+    end
     self.enderDragonSpawnPosition = endCrystal.positionComp:getCollisionCenter()
     table.insert(self.gameObjects, endCrystal)
 end
@@ -98,6 +113,15 @@ function GameObjectManager:getObjsByName(objName)
     return objs
 end
 
+function GameObjectManager:getObjByNameOrNull(objName)
+    for _, gameObject in pairs(self.gameObjects) do
+        if gameObject.name == objName and not gameObject.isDestroyed then
+            return gameObject
+        end
+    end
+    return nil
+end
+
 function GameObjectManager:onNotify(event, data)
     -- spawn ender dragon
     if event == Constants.EVENT_GAMEOBJ_DESTROYED and data.name == Constants.OBJ_NAME_END_CRYSTAL then
@@ -107,6 +131,13 @@ function GameObjectManager:onNotify(event, data)
                 (Constants.ENDER_DRAGON_TRACKING_RANGE / Constants.TILE_SIZE / 2), 0))
     end
 
+    -- if event == Constants.EVENT_GAMEOBJ_DESTROYED and data.name == Constants.OBJ_NAME_PLAYER then
+    --     local dragon = self:getObjByNameOrNull(Constants.OBJ_NAME_ENDER_DRAGON)
+    --     if dragon then
+    --         self:onSpawnNewEndCystal()
+    --     end
+    -- end
+
     -- respawn crystal and show winning message
     if event == Constants.EVENT_GAMEOBJ_DESTROYED and data.name == Constants.OBJ_NAME_ENDER_DRAGON then
         if self.winTimestamp == nil then
@@ -114,7 +145,7 @@ function GameObjectManager:onNotify(event, data)
             self.wonShowTime = Constants.SHOW_WINNING_TIME
         end
 
-        self:onSpawnEndCystal()
+        self:onSpawnNewEndCystal()
     end
 
     -- creeper explode
@@ -283,15 +314,12 @@ function GameObjectManager:update(dt)
     self:handleBlocksOnView(function(block, x, y)
         block:update(dt)
         if (block.isDestroyed) then
-            if y > (Constants.MAP_HEIGHT - Constants.MAP_WATER_HEIGHT) then
-                self.blocks[x][y] = GameObjectFactory.getWaterBlock(x, y)
-            else
-                self.blocks[x][y] = nil
-            end
+            self.blocks[x][y] = nil
         end
     end)
 
     if self.player and self.player.isDestroyed then
+        self.savedPlayer = self.player
         self.player = nil
     end
 
@@ -324,12 +352,18 @@ end
 
 function GameObjectManager:draw()
     DrawHelper.clearSpritebatch()
+
     for i = #self.gameObjects, 1, -1 do
         self.gameObjects[i]:draw()
     end
     self:handleBlocksOnView(function(block, x, y)
         block:draw()
     end)
+    DrawHelper.drawRect(1,
+        (Constants.MAP_HEIGHT - Constants.MAP_WATER_HEIGHT + 1) * Constants.TILE_SIZE,
+        Constants.MAP_WIDTH * Constants.TILE_SIZE,
+        Constants.MAP_WATER_HEIGHT * Constants.TILE_SIZE, { 37 / 255, 58 / 255, 94 / 255, 0.6 })
+
     DrawHelper.drawSpriteBatch()
     self:drawPlayerRespawnMessage()
     self:drawWinningMessage()

@@ -18,6 +18,7 @@ local Sounds = {
     eyeAtEnd = "eyeAtEnd",
     eyeBreak = "eyeBreak",
     shootFireball = "shootFireball",
+    pickup = "pickup",
 }
 
 local DmgSoundMapping = {
@@ -49,6 +50,7 @@ function SoundManager:new()
         [Sounds.eyeAtEnd] = self:getSourceByFile("McEyeAtEndSound"),
         [Sounds.eyeBreak] = self:getSourceByFile("McEyeBreakSound"),
         [Sounds.shootFireball] = self:getSourceByFile("McEnderDragonShootFireballSound"),
+        [Sounds.pickup] = self:getSourceByFile("McPickupSound"),
     }
 
     return self
@@ -93,6 +95,10 @@ function SoundManager:onNotify(event, data)
 
     if event == Constants.EVENT_DAMAGED_BLOCK or event == Constants.EVENT_PLACE_BLOCK then
         self:playSound(Sounds.dmgBlock)
+    end
+
+    if event == Constants.EVENT_PICKUP_ITEM then
+        self:playSound(Sounds.pickup)
     end
 
     if event == Constants.EVENT_ATTACK_ACTION then

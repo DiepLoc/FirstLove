@@ -6,11 +6,14 @@ function SimpleAiState:new(getAttackStateCb, attackRange, getTrackingStateCb)
     self.attackRange = attackRange or 100
     self.getTrackingStateCb = getTrackingStateCb or nil
     self.trackingState = nil
+    self.remainingAttackDelayTime = 0
     return self
 end
 
 ---@param subject GameObject
 function SimpleAiState:update(subject, dt)
+    self.remainingAttackDelayTime = self.remainingAttackDelayTime - (self.remainingAttackDelayTime > 0 and dt or 0)
+
     subject.positionComp.velocity = Vector2(0, 0)
     local player = MyLocator.gameObjectManager.player
     if not player then return nil end
@@ -18,14 +21,15 @@ function SimpleAiState:update(subject, dt)
     local playerCenter = player.positionComp.displayRect:getCenter()
     local subjectCenter = subject.positionComp.displayRect:getCenter()
 
-    local distance, dxVal, dyVal = CommonHelper.getDistance(playerCenter.x, playerCenter.y, subjectCenter.x,
+    local distance, dxVal, dyVal, dx, dy = CommonHelper.getDistance(playerCenter.x, playerCenter.y, subjectCenter.x,
         subjectCenter.y)
     if distance < Constants.MOD_TRACKING_DISTANCE then
-        local direction = CommonHelper.get2dDirectionFromDirection(playerCenter.x, playerCenter.y, subjectCenter.x,
-            subjectCenter.y)
+        -- local moveXDirection = CommonHelper.get2dDirectionFromDirection(playerCenter.x, playerCenter.y, subjectCenter.x,
+        --     subjectCenter.y)
         -- random attack
         if dxVal < self.attackRange and CommonHelper.getRandomResultByTime(Constants.RAMDOM_MOB_ATTACK_TIME, dt) then
-            if self.getAttackStateCb then
+            if self.getAttackStateCb and self.remainingAttackDelayTime <= 0 then
+                self.remainingAttackDelayTime = Constants.COMMON_ENEMY_ATTACK_DELAY
                 return self.getAttackStateCb(self, playerCenter)
             else
                 subject.positionComp:onJump()
@@ -39,7 +43,7 @@ function SimpleAiState:update(subject, dt)
             end
             self.trackingState:update(subject, dt)
         else
-            self:simpleTracking(subject, direction, dxVal, dyVal)
+            self:simpleTracking(subject, playerCenter - subjectCenter, dxVal, dyVal)
         end
     else
         self:randomMoving(subject, dt)

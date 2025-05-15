@@ -2,7 +2,8 @@ GameObjectFactory = Object:extend()
 
 function GameObjectFactory.getSolidBlock(tileX, tileY, column, row, cb)
     local anim = AnimComp("idle", Sprite("general", 16, 16, 1, row, 1, column))
-    local positionComp = PositionComp(tileX * Constants.TILE_SIZE, tileY * Constants.TILE_SIZE, Constants.TILE_SIZE,
+    local positionComp = StaticPositionComp(tileX * Constants.TILE_SIZE, tileY * Constants.TILE_SIZE, Constants
+        .TILE_SIZE,
         Constants.TILE_SIZE):setZeroGravity()
     local obj = GameObject(anim, positionComp, nil, Constants.OBJ_NAME_BLOCK)
     if cb then
@@ -32,8 +33,8 @@ function GameObjectFactory.getPlayer(tileX, tileY)
     obj.inventoryComp:addItem(InventoryItemFactory.getPickaxe())
     obj.inventoryComp:addItem(InventoryItemFactory.getBow())
     obj.inventoryComp:addItem(InventoryItemFactory.getArrow():setStack(5))
-    -- obj.inventoryComp:addItem(InventoryItemFactory.getBlockItem(Constants.OBJ_NAME_BLOCK):setStack(50))
     -- obj.inventoryComp:addItem(InventoryItemFactory.getEyeOfEnderItem():setStack(10))
+    -- obj.inventoryComp:addItem(InventoryItemFactory.getBlockItem(Constants.OBJ_NAME_BLOCK):setStack(50))
     -- obj.inventoryComp:addItem(InventoryItemFactory.getWing())
     return obj
 end
@@ -96,6 +97,11 @@ function GameObjectFactory.getSkeleton(tileX, tileY)
     return obj
 end
 
+function GameObjectFactory.addFlyingAbility(obj)
+    obj.positionComp:setFying()
+    return obj
+end
+
 function GameObjectFactory.getCreeper(tileX, tileY)
     local obj = GameObjectFactory.getMobObj(tileX, tileY, 9, Constants.OBJ_NAME_CREEPER, { attackAnim = "attack" })
     obj.inventoryComp = InventoryComp()
@@ -124,60 +130,57 @@ function GameObjectFactory.getEnderDragon(tileX, tileY)
     local obj = GameObjectFactory.getMobObj(tileX, tileY, 20, Constants.OBJ_NAME_ENDER_DRAGON,
         { xScale = 2, yScale = 1, sizeScale = 2, idle = { frame = 4, fps = Constants.COMMON_ACTION_FPS } })
     obj.infoComp:addInfo(DmgInfo(1, 0, { Constants.OBJ_NAME_PLAYER }, false))
-    obj.infoComp:getInfo(CommonCharInfo):setBaseHealth(15)
+    obj.infoComp:getInfo(CommonCharInfo):setBaseHealth(Constants.ENDER_DRAGON_HEALTH)
     obj.positionComp:setZeroGravity()
     obj.positionComp.isBlocked = false
     obj.positionComp.speed = 500
     obj.stateComp = StateComp(EnderDragonState())
     obj.inventoryComp = InventoryComp()
+
+    if MyLocator.gameObjectManager.winTimestamp then
+        obj.animComp:setBaseColor({ 1, 0, 0, 1 })
+    end
     return obj
 end
 
 function GameObjectFactory.getTopGrassBlock(tileX, tileY)
     return GameObjectFactory.getSolidBlock(tileX, tileY, 0, 0, function(obj)
-        obj.infoComp:addInfo(CommonBlockInfo(false, true))
+        obj.infoComp:addInfo(CommonBlockInfo(true))
     end)
 end
 
 function GameObjectFactory.getGrassBlock(tileX, tileY)
     return GameObjectFactory.getSolidBlock(tileX, tileY, 1, 0, function(obj)
-        obj.infoComp:addInfo(CommonBlockInfo(false, true))
-    end)
-end
-
-function GameObjectFactory.getWaterBlock(tileX, tileY)
-    return GameObjectFactory.getSolidBlock(tileX, tileY, 0, 1, function(obj)
-        obj.positionComp.isBlocked = false
-        obj.infoComp:addInfo(CommonBlockInfo(true, false))
-        obj.name = Constants.OBJ_NAME_WATER
+        obj.infoComp:addInfo(CommonBlockInfo(true))
     end)
 end
 
 function GameObjectFactory.getTreeBlock(tileX, tileY)
     return GameObjectFactory.getSolidBlock(tileX, tileY, 2, 0, function(obj)
         obj.positionComp.isBlocked = false
-        obj.infoComp:addInfo(CommonBlockInfo(false, true, 2))
+        obj.infoComp:addInfo(CommonBlockInfo(true, 2))
         obj.name = Constants.OBJ_NAME_BLOCK_WOOD
     end)
 end
 
 function GameObjectFactory.getLeafBlock(tileX, tileY)
     return GameObjectFactory.getSolidBlock(tileX, tileY, 3, 0, function(obj)
-        obj.infoComp:addInfo(CommonBlockInfo(false, true, 1))
+        obj.infoComp:addInfo(CommonBlockInfo(true, 1))
         obj.name = Constants.OBJ_NAME_BLOCK_LEAF
     end)
 end
 
 function GameObjectFactory.getAppleBlock(tileX, tileY)
     return GameObjectFactory.getSolidBlock(tileX, tileY, 4, 0, function(obj)
-        obj.infoComp:addInfo(CommonBlockInfo(false, true, 1))
+        obj.infoComp:addInfo(CommonBlockInfo(true, 1))
         obj.name = Constants.OBJ_NAME_BLOCK_APPLE
     end)
 end
 
 function GameObjectFactory.getDmgObj(x, y, dmgInfo, dmgSize)
     dmgSize = dmgSize or Constants.EXPLOIT_SIZE
-    local anim = AnimComp("idle-right", Sprite("general", 16, 16, 1, 1, 1, 9))
+    local anim = AnimComp("idle-right", Sprite("general", 16, 16, 1, 1, 1, 0)):setBaseColor(Constants.SHOW_DMG_OBJ and
+        { 1, 1, 1, 1 } or { 1, 1, 1, 0 })
     local positionComp = PositionComp(x - dmgSize / 2, y - dmgSize / 2, dmgSize, dmgSize)
     positionComp.isBlocked = false
     local stateComp = StateComp(ShortLifeState())
@@ -319,17 +322,17 @@ function GameObjectFactory.generateTerrain(width, height, scale, offset, waterHe
                 local block = GameObjectFactory.getGrassBlock(x, actualY)
                 blocks[x][actualY] = block
             elseif y == terrain[x] then
-                if y < waterHeight then
+                if y <= waterHeight then
                     local block = GameObjectFactory.getGrassBlock(x, actualY)
                     blocks[x][actualY] = block
                 else
                     local block = GameObjectFactory.getTopGrassBlock(x, actualY)
                     blocks[x][actualY] = block
                 end
-            elseif y <= waterHeight then
-                local block = GameObjectFactory.getWaterBlock(x, actualY)
-                blocks[x][actualY] = block
-            elseif y == terrain[x] + 1 and y > waterHeight and love.math.random() < 0.1 then
+                -- elseif y <= waterHeight then
+                --     local block = GameObjectFactory.getWaterBlock(x, actualY)
+                --     blocks[x][actualY] = block
+            elseif y == terrain[x] + 1 and y - 1 > waterHeight and love.math.random() < 0.1 then
                 GameObjectFactory.generateTree(blocks, x, actualY, love.math.random(3, 6))
             end
         end

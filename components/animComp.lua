@@ -11,6 +11,12 @@ function AnimComp:new(currentAnimName, anim)
     return self
 end
 
+function AnimComp:setBaseColor(color)
+    self.color = color
+    self.baseColor = color
+    return self
+end
+
 function AnimComp:addAnim(name, anim)
     self.anims[name] = anim
     return self
