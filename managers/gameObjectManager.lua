@@ -62,7 +62,7 @@ function GameObjectManager:onSpawnPlayer()
     if self.savedPlayer then
         self.player.inventoryComp = self.savedPlayer.inventoryComp
         self.player.infoComp:getInfo(CommonCharInfo).health = 1
-        self.player.infoComp:getInfo(CommonCharInfo).hunger = 2
+        self.player.infoComp:getInfo(CommonCharInfo).hunger = 4
         if self.savedPlayer.positionComp.isFlying then
             self.player.positionComp:setFying()
         end

@@ -23,7 +23,6 @@ function FaceToFaceTeleportState:update(subject, dt)
         self.remainingTeleportWaitTime = 3
     else
         self:simpleTracking(subject, vector, dxVal, dyVal)
-        print("tracking")
     end
 
     self.remainingTeleportWaitTime = self.remainingTeleportWaitTime - dt

@@ -51,7 +51,7 @@ end
 ---@param event string
 ---@param data any
 function Locator:notify(event, data)
-    print("event-" .. event)
+    -- print("event-" .. event)
 
     -- notify to observers
     for _, observer in pairs(self.observers) do
