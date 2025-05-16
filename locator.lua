@@ -67,7 +67,6 @@ local lootMapping = {
             .isFlying and 20 or 6)
     end,
     [Constants.OBJ_NAME_BLOCK_APPLE] = function(obj) return InventoryItemFactory.getAppleItem() end,
-    -- [Constants.OBJ_NAME_BLOCK] = function() return InventoryItemFactory.getBlockItem(Constants.OBJ_NAME_BLOCK) end,
     [Constants.OBJ_NAME_ZOMBIE] = function(obj) return InventoryItemFactory.getMeatItem() end,
     [Constants.OBJ_NAME_ENDERMAN] = function(obj) return InventoryItemFactory.getEyeOfEnderItem() end,
     [Constants.OBJ_NAME_ENDER_DRAGON] = function(obj) return InventoryItemFactory.getWing() end,

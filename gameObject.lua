@@ -36,10 +36,9 @@ function GameObject:onTeleport(tileX, tileY)
 end
 
 function GameObject:update(dt)
-  self.animComp:update(self, dt)
-  if not self.animComp.isInsideScreen then return end
   self.collisionObjs = {}
 
+  self.animComp:update(self, dt)
   if self.inventoryComp then
     self.inventoryComp:update(self, dt)
   end
@@ -58,7 +57,6 @@ function GameObject:checkIsDying()
 end
 
 function GameObject:handleCollision(otherObj, dt)
-  -- if otherObj.isDestroyed then return end
   if self.collisionObjs[otherObj] == nil then
     self.collisionObjs[otherObj] = otherObj
     self.infoComp:handleCollision(self, otherObj, dt)
@@ -66,8 +64,6 @@ function GameObject:handleCollision(otherObj, dt)
 end
 
 function GameObject:draw()
-  if not self.animComp.isInsideScreen then return end
-
   self.positionComp:draw()
   self.animComp:draw(self.positionComp)
   if self.infoComp then
@@ -77,7 +73,6 @@ function GameObject:draw()
   if self.inventoryComp then
     self.inventoryComp:draw(self)
   end
-  -- self.stateComp:draw()
 end
 
 return GameObject

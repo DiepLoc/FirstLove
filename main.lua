@@ -27,28 +27,7 @@ function love.wheelmoved(x, y)
     end
 end
 
-function love.keypressed(key)
-    if key == "escape" then
-        love.event.quit()
-    end
-
-    if key == "z" then
-        MyLocator.camera:setScale(MyLocator.camera.scale * 2)
-    end
-    if key == "x" then
-        MyLocator.camera:setScale(MyLocator.camera.scale / 2)
-    end
-
-    if key == "space" and MyLocator.gameObjectManager:checkIsPlayerDestroyed() then
-        MyLocator.gameObjectManager:onSpawnPlayer()
-    end
-
-    if key == "rshift" then
-        local a = 1
-    end
-
-    if not Constants.DEBUG_BACKGROUND_COLOR then return end
-
+local function debugBG(key)
     local changeVal = 5
     if key == "1" then
         background.R = CommonHelper.clamp(background.R + changeVal, 0, 255)
@@ -70,6 +49,31 @@ function love.keypressed(key)
     end
 end
 
+function love.keypressed(key)
+    if key == "escape" then
+        love.event.quit()
+    end
+
+    if key == "z" then
+        MyLocator.camera:setScale(MyLocator.camera.scale * 2)
+    end
+    if key == "x" then
+        MyLocator.camera:setScale(MyLocator.camera.scale / 2)
+    end
+
+    if key == "space" and MyLocator.gameObjectManager:checkIsPlayerDestroyed() then
+        MyLocator.gameObjectManager:onSpawnPlayer()
+    end
+
+    if key == "rshift" then
+        local a = 1
+    end
+
+    if Constants.DEBUG_BACKGROUND_COLOR then
+        debugBG(key)
+    end
+end
+
 function love.load()
     -- Load resources here
     love.graphics.setBackgroundColor(100 / 255, 150 / 255, 200 / 255)
@@ -88,16 +92,7 @@ function AddDebugStr(str)
     table.insert(debugContents, str)
 end
 
-function love.update(dt)
-    love.graphics.setBackgroundColor(background.R / 255, background.G / 255, background.B / 255)
-    debugContents = {}
-    -- Update logic here
-    MyLocator:update(dt)
-    AddDebugStr("(" .. background.R .. "," .. background.G .. "," .. background.B .. ")")
-    GameTimerUpdate(dt)
-end
-
-function GameTimerUpdate(dt)
+local function gameTimerUpdate(dt)
     GameTimer.s = GameTimer.s + dt
     if GameTimer.s >= 60 then
         GameTimer.m = GameTimer.m + 1
@@ -108,6 +103,15 @@ function GameTimerUpdate(dt)
         GameTimer.h = GameTimer.h + 1
         GameTimer.m = 0
     end
+end
+
+function love.update(dt)
+    love.graphics.setBackgroundColor(background.R / 255, background.G / 255, background.B / 255)
+    debugContents = {}
+    -- Update logic here
+    MyLocator:update(dt)
+    AddDebugStr("(" .. background.R .. "," .. background.G .. "," .. background.B .. ")")
+    gameTimerUpdate(dt)
 end
 
 function love.draw()

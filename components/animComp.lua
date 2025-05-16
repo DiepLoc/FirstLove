@@ -5,7 +5,6 @@ function AnimComp:new(currentAnimName, anim)
     self.anims = {}
     self:addAnim(currentAnimName, anim)
     self.currentAnimName = currentAnimName
-    self.isInsideScreen = true
     self.color = { 1, 1, 1, 1 }
     self.baseColor = { 1, 1, 1, 1 }
     return self
@@ -50,7 +49,6 @@ function AnimComp:update(subject, dt)
     local lerpB = CommonHelper.lerpValue(self.color[3], self.baseColor[3], 0.05)
     local lerpA = CommonHelper.lerpValue(self.color[4], self.baseColor[4], 0.05)
     self.color = { lerpR, lerpG, lerpB, lerpA }
-    -- self.isInsideScreen = MyLocator.camera:worldToScreenOrNull(subject.positionComp.displayRect) ~= nil
 end
 
 function AnimComp:addDyingAnim()
@@ -62,8 +60,10 @@ function AnimComp:draw(positionComp)
 
     local currentAnim = self:getCurrentAnim()
     local displayRect = positionComp.displayRect
+    --- collision rect for debug
     -- local collisionRect = positionComp:getWorldCollisionRect()
     -- DrawHelper.drawRect(collisionRect.x, collisionRect.y, collisionRect.width, collisionRect.height)
+
     currentAnim:draw(displayRect.x, displayRect.y, displayRect.width, displayRect.height, self.color)
 end
 

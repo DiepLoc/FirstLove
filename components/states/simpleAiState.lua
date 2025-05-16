@@ -24,8 +24,6 @@ function SimpleAiState:update(subject, dt)
     local distance, dxVal, dyVal, dx, dy = CommonHelper.getDistance(playerCenter.x, playerCenter.y, subjectCenter.x,
         subjectCenter.y)
     if distance < Constants.MOD_TRACKING_DISTANCE then
-        -- local moveXDirection = CommonHelper.get2dDirectionFromDirection(playerCenter.x, playerCenter.y, subjectCenter.x,
-        --     subjectCenter.y)
         -- random attack
         if dxVal < self.attackRange and CommonHelper.getRandomResultByTime(Constants.RAMDOM_MOB_ATTACK_TIME, dt) then
             if self.getAttackStateCb and self.remainingAttackDelayTime <= 0 then

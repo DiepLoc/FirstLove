@@ -19,6 +19,7 @@ local Sounds = {
     eyeBreak = "eyeBreak",
     shootFireball = "shootFireball",
     pickup = "pickup",
+    dragonSong = "dragonSong"
 }
 
 local DmgSoundMapping = {
@@ -39,7 +40,7 @@ function SoundManager:new()
         [Sounds.dmgZombie] = self:getSourceByFile("McDamagedZombieSound"),
         [Sounds.dmgCreeper] = self:getSourceByFile("McDamagedCreeperSound"),
         [Sounds.dmgSkeleton] = self:getSourceByFile("McDamagedSkeletonSound"),
-        [Sounds.dmgEnderman] = self:getSourceByFile("McDamagedEndermanSound"),
+        [Sounds.dmgEnderman] = self:getSourceByFile("McDamagedEndermanSound", 0.3),
         [Sounds.dmgEnderDragon] = self:getSourceByFile("McDamagedEnderDragonSound"),
         [Sounds.enderDragonDie] = self:getSourceByFile("McEnderDragonDeathSound"),
         [Sounds.explosion] = self:getSourceByFile("McExplosionSound"),
@@ -51,18 +52,32 @@ function SoundManager:new()
         [Sounds.eyeBreak] = self:getSourceByFile("McEyeBreakSound"),
         [Sounds.shootFireball] = self:getSourceByFile("McEnderDragonShootFireballSound"),
         [Sounds.pickup] = self:getSourceByFile("McPickupSound"),
+        [Sounds.dragonSong] = self:getSongByFile("Battle Of The Beast - The Soundings", 0.2),
     }
 
     return self
 end
 
-function SoundManager:getSourceByFile(name)
-    return love.audio.newSource("assets/sounds/" .. name .. ".wav", "static")
+function SoundManager:getSourceByFile(name, volume)
+    local source = love.audio.newSource("assets/sounds/" .. name .. ".wav", "static")
+    source:setVolume(volume or 1)
+    return source
+end
+
+function SoundManager:getSongByFile(name, volume)
+    local source = love.audio.newSource("assets/sounds/" .. name .. ".mp3", "stream")
+    source:setVolume(volume or 1)
+    source:setLooping(true)
+    return source
 end
 
 function SoundManager:playSound(name)
     love.audio.stop(self.sounds[name])
     love.audio.play(self.sounds[name])
+end
+
+function SoundManager:stop(name)
+    love.audio.stop(self.sounds[name])
 end
 
 function SoundManager:onNotify(event, data)
@@ -77,8 +92,13 @@ function SoundManager:onNotify(event, data)
         self:playSound(sound)
     end
 
+    if event == Constants.EVENT_GAMEOBJ_DESTROYED and data.name == Constants.OBJ_NAME_END_CRYSTAL then
+        self:playSound(Sounds.dragonSong)
+    end
+
     if event == Constants.EVENT_GAMEOBJ_DESTROYED and data.name == Constants.OBJ_NAME_ENDER_DRAGON then
         self:playSound(Sounds.enderDragonDie)
+        self:stop(Sounds.dragonSong)
     end
 
     if event == Constants.EVENT_PlAYER_SPAWN then

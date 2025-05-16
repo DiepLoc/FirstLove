@@ -64,9 +64,11 @@ end
 ---@param obj GameObject
 ---@param dt any
 function PositionComp:update(obj, dt)
+    --in water handle
     if self:getWorldCollisionRect().bottom > (Constants.MAP_HEIGHT - Constants.MAP_WATER_HEIGHT + 1) * Constants.TILE_SIZE then
         self:onInWaterHandle(dt)
     end
+
     self.gravity = self.gravity + Constants.GRAVITY * self.speedRate * dt
 
     local normalize = self.velocity:normalize()
@@ -87,6 +89,8 @@ function PositionComp:update(obj, dt)
         if math.abs(self.inertia.x) < 0.5 then self.inertia.x = 0 end
         if math.abs(self.inertia.y) < 0.5 then self.inertia.y = 0 end
     end
+
+    -- check and handle movement
     local finalDx, finalDy, isGrounded = MyLocator.gameObjectManager:handleMoving(obj, dx, dy)
     self.displayRect:move(finalDx, finalDy)
 
@@ -95,15 +99,14 @@ function PositionComp:update(obj, dt)
         self.gravity = 0
     end
 
-    -- handle falling off map
+    -- handle death when falling off map
     if obj.stateComp and obj.stateComp.currentState
         and not obj.stateComp.currentState:is(DyingState)
         and self.displayRect.y > Constants.MAP_HEIGHT * 2 * Constants.TILE_SIZE then
         obj.stateComp:setState(DyingState())
     end
 
-    -- reset
-
+    -- reset props
     self.speedRate = 1
     self.swimFactor = self.swimFactor - (self.swimFactor > 0 and dt or 0)
     self.lastDirection = normalize.x > 0 and "right" or (normalize.x < 0 and "left" or self.lastDirection)

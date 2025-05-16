@@ -24,12 +24,6 @@ function PlayerState:update(subject, dt)
     self:checkItemInput(subject)
     local positionComp = subject.positionComp
     local newVelo = Vector2(0, 0)
-    -- if love.keyboard.isDown("s") then
-    --     newVelo.y = newVelo.y + 1
-    -- end
-    -- if love.keyboard.isDown("w") then
-    --     newVelo.y = newVelo.y - 1
-    -- end
     if love.keyboard.isDown("a") then
         newVelo.x = newVelo.x - 1
     end

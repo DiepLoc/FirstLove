@@ -95,9 +95,9 @@ function GameObjectManager:onSpawnNewEndCystal()
     local spawnOffset = 100 * Constants.TILE_SIZE
     local x1 = math.random(spawnOffset, Constants.TILE_SIZE * Constants.MAP_WIDTH / 2 - spawnOffset)
     local finalX = x1 + (math.random() < 0.5 and Constants.TILE_SIZE * Constants.MAP_WIDTH / 2 or 0)
-    local endCrystal = Factory.getEndCrystal(finalX, 0)
+    local endCrystal = Factory.getEndCrystal(finalX, -2 * Constants.TILE_SIZE)
     if Constants.DEBUG_DRAGON_OR_CRYSTAL then
-        endCrystal = Factory.getEndCrystal(Constants.TILE_SIZE * Constants.MAP_WIDTH / 2 + 500, 0)
+        endCrystal = Factory.getEndCrystal(Constants.TILE_SIZE * Constants.MAP_WIDTH / 2 + 500, -2 * Constants.TILE_SIZE)
     end
     self.enderDragonSpawnPosition = endCrystal.positionComp:getCollisionCenter()
     table.insert(self.gameObjects, endCrystal)

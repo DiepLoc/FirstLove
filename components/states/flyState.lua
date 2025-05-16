@@ -10,9 +10,6 @@ function FlyState:new(directionVector, speed)
 end
 
 function FlyState:update(subject, dt)
-    -- gravity
-    -- subject.positionComp.gravity = subject.positionComp.gravity + self.vy
-    -- self.vy = 0
     self.remainingLifeTime = self.remainingLifeTime - (self.remainingLifeTime > 0 and dt or 0)
     if self.remainingLifeTime <= 0 then
         subject.isDestroyed = true

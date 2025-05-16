@@ -10,8 +10,6 @@ end
 ---@param subject GameObject
 ---@param dt any
 function EnderEyeState:update(subject, dt)
-    -- Update logic for the base state
-    -- This method should be overridden in derived classes
     if not self.dXY then
         local currentPos = Vector2(subject.positionComp.displayRect.x, subject.positionComp.displayRect.y)
         local enderPos = MyLocator.gameObjectManager.enderDragonSpawnPosition

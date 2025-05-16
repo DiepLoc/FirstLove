@@ -60,7 +60,6 @@ function WeaponItem:onLeftAction(subject, data)
         CommonHelper.get2dDirectionFromDirection
     local actionDirection = directionFunc(data.targetPos.x, data.targetPos.y, subjectCenter.x,
         subjectCenter.y)
-    -- local worldPlayerTile = worldPlayerCenter.toWorldTile()
     local performActionPos = subjectCenter +
         Vector2(actionDirection.x * Constants.ACTION_DISTANCE, actionDirection.y * Constants.ACTION_DISTANCE)
 

@@ -33,9 +33,12 @@ function GameObjectFactory.getPlayer(tileX, tileY)
     obj.inventoryComp:addItem(InventoryItemFactory.getPickaxe())
     obj.inventoryComp:addItem(InventoryItemFactory.getBow())
     obj.inventoryComp:addItem(InventoryItemFactory.getArrow():setStack(5))
-    -- obj.inventoryComp:addItem(InventoryItemFactory.getEyeOfEnderItem():setStack(10))
-    -- obj.inventoryComp:addItem(InventoryItemFactory.getBlockItem(Constants.OBJ_NAME_BLOCK):setStack(50))
-    -- obj.inventoryComp:addItem(InventoryItemFactory.getWing())
+    if Constants.DEBUG_DRAGON_OR_CRYSTAL then
+        obj.inventoryComp:addItem(InventoryItemFactory.getEyeOfEnderItem():setStack(10))
+        obj.inventoryComp:addItem(InventoryItemFactory.getBlockItem(Constants.OBJ_NAME_BLOCK):setStack(50))
+        obj.inventoryComp:addItem(InventoryItemFactory.getWing())
+    end
+
     return obj
 end
 
@@ -285,8 +288,6 @@ function GameObjectFactory.generateTree(blocks, x, y, height)
         if leafWidthLeft > 0 and math.random() < 0.6 then
             leafWidthLeft = leafWidthLeft - 1
             leafWidthRight = leafWidthRight - 1
-        else
-            -- if leafWidthRight >= 0 and math.random() < 0.4 then leafWidthRight = leafWidthRight - 1 end
         end
     end
 end
@@ -329,9 +330,6 @@ function GameObjectFactory.generateTerrain(width, height, scale, offset, waterHe
                     local block = GameObjectFactory.getTopGrassBlock(x, actualY)
                     blocks[x][actualY] = block
                 end
-                -- elseif y <= waterHeight then
-                --     local block = GameObjectFactory.getWaterBlock(x, actualY)
-                --     blocks[x][actualY] = block
             elseif y == terrain[x] + 1 and y - 1 > waterHeight and love.math.random() < 0.1 then
                 GameObjectFactory.generateTree(blocks, x, actualY, love.math.random(3, 6))
             end
