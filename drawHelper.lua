@@ -27,6 +27,8 @@ function DrawHelper.drawImage(imageName, sourceRect, destRect, color, flipX, fli
         return
     end
     local image = MyLocator.imageManager:getImage(imageName)
+    sourceRect = sourceRect or Rectangle(0, 0, image:getWidth(), image:getHeight())
+
     local quad = love.graphics.newQuad(sourceRect.x, sourceRect.y, sourceRect.width, sourceRect.height,
         image:getDimensions())
     if color then

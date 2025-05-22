@@ -43,6 +43,7 @@ Constants = {
     SHOW_DMG_OBJ = false,
     DEBUG_BACKGROUND_COLOR = false,
     DEBUG_DRAGON_OR_CRYSTAL = false,
+    TURN_OFF_BOSS_MUSIC = false,
 
 
     -- game object names

@@ -7,6 +7,7 @@ function ImageManager:new()
         block = love.graphics.newImage("assets/images/yellowBlock.png"),
         general = love.graphics.newImage("assets/images/MinecraftContent.png"),
         characters = love.graphics.newImage("assets/images/MinecraftChars.png"),
+        sky = love.graphics.newImage("assets/images/mc-sky.png"),
     }
     return self
 end

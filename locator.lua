@@ -4,6 +4,7 @@ require "managers.gameObjectManager"
 require "managers.uiManager"
 require "managers.soundManager"
 require "managers.enemySpawnManager"
+require "parallaxBackground"
 
 ---@class Locator
 Locator = Object:extend()
@@ -25,6 +26,9 @@ function Locator:new()
     self.soundManager = SoundManager()
     ---@type EnemySpawnManager
     self.enemySpawnManager = EnemySpawnManager()
+    ---@type ParallaxBackground
+    self.parallaxBackground = ParallaxBackground(Vector2(Constants.MAP_WIDTH * Constants.TILE_SIZE / 2,
+        0))
 
     self.managers = {
         self.imageManager,
@@ -99,6 +103,7 @@ function Locator:update(dt)
         value:update(dt)
     end
     self.camera:update(dt)
+    self.parallaxBackground:update(dt)
 end
 
 function Locator:checkKeyPress(key, isNew)
@@ -112,6 +117,7 @@ function Locator:checkKeyPress(key, isNew)
 end
 
 function Locator:draw()
+    self.parallaxBackground:draw()
     for _, value in pairs(self.managers) do
         value:draw()
     end

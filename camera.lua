@@ -47,6 +47,9 @@ function Camera:setCenterPosition(x, y)
 end
 
 function Camera:setScale(scale)
+    if scale < 0.5 or scale > 4 then
+        return
+    end
     local center = self:getRect():getCenter()
     self.scale = scale
     self:setCenterPosition(center.x, center.y)

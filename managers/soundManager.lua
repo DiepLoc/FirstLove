@@ -92,7 +92,7 @@ function SoundManager:onNotify(event, data)
         self:playSound(sound)
     end
 
-    if event == Constants.EVENT_GAMEOBJ_DESTROYED and data.name == Constants.OBJ_NAME_END_CRYSTAL then
+    if event == Constants.EVENT_GAMEOBJ_DESTROYED and data.name == Constants.OBJ_NAME_END_CRYSTAL and not Constants.TURN_OFF_BOSS_MUSIC then
         self:playSound(Sounds.dragonSong)
     end
 
